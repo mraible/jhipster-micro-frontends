@@ -1,0 +1,31 @@
+{
+  "annotations": {
+    "changelogDate": "20240411134518"
+  },
+  "applications": ["store"],
+  "clientRootFolder": "store",
+  "databaseType": "mongodb",
+  "fields": [
+    {
+      "fieldName": "title",
+      "fieldType": "String",
+      "fieldValidateRules": ["required"]
+    },
+    {
+      "fieldName": "price",
+      "fieldType": "BigDecimal",
+      "fieldValidateRules": ["required", "min"],
+      "fieldValidateRulesMin": "0"
+    },
+    {
+      "fieldName": "image",
+      "fieldType": "byte[]",
+      "fieldTypeBlobContent": "image"
+    }
+  ],
+  "microserviceName": "store",
+  "name": "Product",
+  "pagination": "pagination",
+  "relationships": [],
+  "searchEngine": "no"
+}
