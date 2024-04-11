@@ -1,0 +1,35 @@
+{
+  "annotations": {
+    "changelogDate": "20240411134518"
+  },
+  "applications": ["blog"],
+  "clientRootFolder": "blog",
+  "databaseType": "neo4j",
+  "fields": [
+    {
+      "fieldName": "name",
+      "fieldType": "String",
+      "fieldValidateRules": ["required", "minlength"],
+      "fieldValidateRulesMinlength": "3"
+    },
+    {
+      "fieldName": "handle",
+      "fieldType": "String",
+      "fieldValidateRules": ["required", "minlength"],
+      "fieldValidateRulesMinlength": "2"
+    }
+  ],
+  "microserviceName": "blog",
+  "name": "Blog",
+  "relationships": [
+    {
+      "otherEntityField": "login",
+      "otherEntityName": "user",
+      "relationshipName": "user",
+      "relationshipSide": "left",
+      "relationshipType": "many-to-one",
+      "relationshipWithBuiltInEntity": true
+    }
+  ],
+  "searchEngine": "no"
+}
