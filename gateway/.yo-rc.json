@@ -1,0 +1,46 @@
+{
+  "generator-jhipster": {
+    "applicationIndex": 0,
+    "applicationType": "gateway",
+    "applications": {
+      "blog": {
+        "applicationIndex": 1,
+        "clientFramework": "react",
+        "serverPort": "8081"
+      },
+      "store": {
+        "applicationIndex": 2,
+        "clientFramework": "react",
+        "serverPort": "8082"
+      }
+    },
+    "authenticationType": "oauth2",
+    "baseName": "gateway",
+    "buildTool": "gradle",
+    "clientFramework": "react",
+    "devServerPort": 9060,
+    "entities": [],
+    "jhipsterVersion": "8.3.0",
+    "jwtSecretKey": "ZmY3YmM0NzliNTdlZWM4ZTliNTBhNzA1ZmIzMGVhZTJkN2FkMDEyMjRjYjAzNjJmNWQ2NTc3NTMxNzYwNjgzN2VmMTZiM2E5ZmE4YjFiNmVhNTE2ODMyZjkzYWJlNDkxYTE1N2YyNzhiZjViMjYyMDU1MjQ3MWM1MDgzMzM5ZGU=",
+    "languages": ["en"],
+    "microfrontends": [
+      {
+        "baseName": "blog"
+      },
+      {
+        "baseName": "store"
+      }
+    ],
+    "monorepository": true,
+    "nativeLanguage": "en",
+    "packageFolder": "org/jhipster/gateway",
+    "packageName": "org.jhipster.gateway",
+    "prodDatabaseType": "postgresql",
+    "reactive": true,
+    "serviceDiscoveryType": "consul",
+    "skipCommitHook": true,
+    "skipUserManagement": true,
+    "syncUserWithIdp": true,
+    "testFrameworks": ["cypress"]
+  }
+}
