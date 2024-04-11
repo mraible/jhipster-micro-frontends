@@ -1,0 +1,21 @@
+{
+  "generator-jhipster": {
+    "appsFolders": ["gateway", "blog", "store"],
+    "clusteredDbApps": ["store"],
+    "dbRandomPassword": "d6894b245b69d8d8ea620f5f3c4448168f82b3eaeef41d85c1cb98f59f14",
+    "deploymentType": "kubernetes",
+    "directoryPath": "../",
+    "dockerPushCommand": "docker push",
+    "dockerRepositoryName": "mraible",
+    "ingressDomain": "",
+    "istio": false,
+    "jhipsterVersion": "8.3.0",
+    "jwtSecretKey": "ZWEzNTc1MDVjNGQzZjIxZGUwODllMTkzZWIwN2ZlMDhmOTc2NWNjY2QxY2NkMDc4NzZkZGRjOTdiOTZmMWIzNGY5NTg1MmFlM2RlNDllYmI2ZWViY2I3YTc0ZjMzNjcwN2VhMw==",
+    "kubernetesNamespace": "demo",
+    "kubernetesServiceType": "LoadBalancer",
+    "kubernetesStorageClassName": "",
+    "kubernetesUseDynamicStorage": true,
+    "monitoring": "no",
+    "serviceDiscoveryType": "consul"
+  }
+}
