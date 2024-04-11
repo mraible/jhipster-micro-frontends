@@ -90,7 +90,7 @@ export const Product = () => {
   };
 
   return (
-    <div>
+    <div className="bg-info">
       <h2 id="product-heading" data-cy="ProductHeading">
         <Translate contentKey="storeApp.storeProduct.home.title">Products</Translate>
         <div className="d-flex justify-content-end">
