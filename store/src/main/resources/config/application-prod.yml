@@ -45,7 +45,7 @@ spring:
       port: 8500
   data:
     mongodb:
-      uri: mongodb://localhost:27017/store?waitQueueMultiple=1000
+      uri: mongodb://localhost:27017/store
   thymeleaf:
     cache: true
 
@@ -86,6 +86,10 @@ jhipster:
   http:
     cache: # Used by the CachingHttpHeadersFilter
       timeToLiveInDays: 1461
+  cache: # Cache configuration
+    hazelcast: # Hazelcast distributed cache
+      time-to-live-seconds: 3600
+      backup-count: 1
   logging:
     use-json-format: false # By default, logs are not in Json format
     logstash: # Forward logs to logstash over a socket, used by LoggingConfiguration

@@ -51,11 +51,6 @@ task integrationTest(type: Test) {
     // see https://github.com/jhipster/generator-jhipster/pull/2771 and https://github.com/jhipster/generator-jhipster/pull/4484
     // ignoreFailures true
     reports.html.required = false
-    if (JavaVersion.current().isCompatibleWith(JavaVersion.VERSION_13)) {
-        jvmArgs += [
-            "-XX:+AllowRedefinitionToAddDeleteMethods"
-        ]
-    }
 }
 integrationTest.dependsOn test
 

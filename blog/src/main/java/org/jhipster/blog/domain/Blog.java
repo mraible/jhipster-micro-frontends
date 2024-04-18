@@ -22,12 +22,12 @@ public class Blog implements Serializable {
     @GeneratedValue(UUIDStringGenerator.class)
     private String id;
 
-    @NotNull(message = "must not be null")
+    @NotNull
     @Size(min = 3)
     @Property("name")
     private String name;
 
-    @NotNull(message = "must not be null")
+    @NotNull
     @Size(min = 2)
     @Property("handle")
     private String handle;

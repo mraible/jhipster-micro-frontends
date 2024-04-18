@@ -33,7 +33,7 @@ export const Home = () => {
         {account?.login ? (
           <div>
             <Alert color="success">
-              <Translate contentKey="home.logged.message" interpolate={{username: account.login}}>
+              <Translate contentKey="home.logged.message" interpolate={{ username: account.login }}>
                 You are logged in as user {account.login}.
               </Translate>
             </Alert>
@@ -48,8 +48,8 @@ export const Home = () => {
               </a>
               <Translate contentKey="global.messages.info.authenticated.suffix">
                 , you can try the default accounts:
-                <br/>- Administrator (login=&quot;admin&quot; and password=&quot;admin&quot;)
-                <br/>- User (login=&quot;user&quot; and password=&quot;user&quot;).
+                <br />- Administrator (login=&quot;admin&quot; and password=&quot;admin&quot;)
+                <br />- User (login=&quot;user&quot; and password=&quot;user&quot;).
               </Translate>
             </Alert>
           </div>
@@ -70,8 +70,7 @@ export const Home = () => {
             </a>
           </li>
           <li>
-            <a href="https://github.com/jhipster/generator-jhipster/issues?state=open" target="_blank"
-               rel="noopener noreferrer">
+            <a href="https://github.com/jhipster/generator-jhipster/issues?state=open" target="_blank" rel="noopener noreferrer">
               <Translate contentKey="home.link.bugtracker">JHipster bug tracker</Translate>
             </a>
           </li>

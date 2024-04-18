@@ -3,7 +3,9 @@ package org.jhipster.blog.domain;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import java.io.Serializable;
 import java.time.Instant;
+import org.springframework.data.annotation.CreatedBy;
 import org.springframework.data.annotation.CreatedDate;
+import org.springframework.data.annotation.LastModifiedBy;
 import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.neo4j.core.schema.Property;
 
@@ -18,6 +20,7 @@ public abstract class AbstractAuditingEntity<T> implements Serializable {
 
     public abstract T getId();
 
+    @CreatedBy
     @Property("created_by")
     private String createdBy;
 
@@ -25,6 +28,7 @@ public abstract class AbstractAuditingEntity<T> implements Serializable {
     @Property("created_date")
     private Instant createdDate = Instant.now();
 
+    @LastModifiedBy
     @Property("last_modified_by")
     private String lastModifiedBy;
 

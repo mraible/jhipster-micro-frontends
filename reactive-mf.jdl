@@ -17,7 +17,7 @@ application {
 application {
   config {
     baseName blog
-    reactive true
+    reactive false
     packageName org.jhipster.blog
     applicationType microservice
     authenticationType oauth2
@@ -35,7 +35,7 @@ application {
 application {
   config {
     baseName store
-    reactive true
+    reactive false
     packageName org.jhipster.store
     applicationType microservice
     authenticationType oauth2
