@@ -1,7 +1,8 @@
 package org.jhipster.blog.web.rest;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.springframework.security.test.web.reactive.server.SecurityMockServerConfigurers.csrf;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.time.Instant;
@@ -17,14 +18,15 @@ import org.jhipster.blog.service.mapper.UserMapper;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.web.reactive.AutoConfigureWebTestClient;
+import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
+import org.springframework.cache.CacheManager;
 import org.springframework.security.test.context.support.WithMockUser;
-import org.springframework.test.web.reactive.server.WebTestClient;
+import org.springframework.test.web.servlet.MockMvc;
 
 /**
  * Integration tests for the {@link UserResource} REST controller.
  */
-@AutoConfigureWebTestClient(timeout = IntegrationTest.DEFAULT_TIMEOUT)
+@AutoConfigureMockMvc
 @WithMockUser(authorities = AuthoritiesConstants.ADMIN)
 @IntegrationTest
 class UserResourceIT {
@@ -53,13 +55,17 @@ class UserResourceIT {
     private UserMapper userMapper;
 
     @Autowired
-    private WebTestClient webTestClient;
+    private CacheManager cacheManager;
+
+    @Autowired
+    private MockMvc restUserMockMvc;
 
     private User user;
 
     @BeforeEach
-    public void setupCsrf() {
-        webTestClient = webTestClient.mutateWith(csrf());
+    public void setup() {
+        cacheManager.getCache(UserRepository.USERS_BY_LOGIN_CACHE).clear();
+        cacheManager.getCache(UserRepository.USERS_BY_EMAIL_CACHE).clear();
     }
 
     /**
@@ -85,7 +91,7 @@ class UserResourceIT {
      * Setups the database with one user.
      */
     public static User initTestUser(UserRepository userRepository) {
-        userRepository.deleteAll().block();
+        userRepository.deleteAll();
         User user = createEntity();
         return user;
     }
@@ -172,6 +178,6 @@ class UserResourceIT {
     }
 
     private void assertPersistedUsers(Consumer<List<User>> userAssertion) {
-        userAssertion.accept(userRepository.findAll().collectList().block());
+        userAssertion.accept(userRepository.findAll());
     }
 }

@@ -24,11 +24,9 @@ springdoc:
   api-docs:
     enabled: false
 ---
-reactive:
-  feign:
-    circuit:
-      breaker:
-        enabled: true
+feign:
+  circuitbreaker:
+    enabled: true
   # client:
   #   config:
   #     default:
@@ -50,6 +48,7 @@ management:
           - loggers
           - prometheus
           - threaddump
+          - caches
   endpoint:
     health:
       show-details: when_authorized
@@ -125,7 +124,7 @@ spring:
     basename: i18n/messages
   main:
     allow-bean-definition-overriding: true
-  webflux:
+  mvc:
     problemdetails:
       enabled: true
   task:

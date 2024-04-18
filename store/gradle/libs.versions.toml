@@ -1,4 +1,5 @@
 [versions]
+hazelcast-spring = "5.3.7"
 jacoco = "0.8.12"
 checkstyle = "10.15.0"
 # jhipster-needle-gradle-dependency-catalog-version - JHipster will add additional versions for convention plugins heref
@@ -6,9 +7,9 @@ checkstyle = "10.15.0"
 [libraries]
 jhipster-framework = { module = "tech.jhipster:jhipster-framework", version = "8.3.0" }
 spring-cloud-dependencies = { module = "org.springframework.cloud:spring-cloud-dependencies", version = "2023.0.1" }
-springdoc-openapi-starter-webflux-api = { module = "org.springdoc:springdoc-openapi-starter-webflux-api", version = "2.5.0" }
-feign-reactor-bom = { module = "com.playtika.reactivefeign:feign-reactor-bom", version = "4.0.3" }
+springdoc-openapi-starter-webmvc-api = { module = "org.springdoc:springdoc-openapi-starter-webmvc-api", version = "2.5.0" }
 mongock-bom = { module = "io.mongock:mongock-bom", version = "5.4.1" }
+hazelcast-spring = { module = "com.hazelcast:hazelcast-spring", version = "5.3.7" }
 # jhipster-needle-gradle-dependency-catalog-libraries - JHipster will add additional libraries versions
 
 [plugins]
