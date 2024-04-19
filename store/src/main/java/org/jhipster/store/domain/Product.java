@@ -19,11 +19,11 @@ public class Product implements Serializable {
     @Id
     private String id;
 
-    @NotNull
+    @NotNull(message = "must not be null")
     @Field("title")
     private String title;
 
-    @NotNull
+    @NotNull(message = "must not be null")
     @DecimalMin(value = "0")
     @Field("price")
     private BigDecimal price;

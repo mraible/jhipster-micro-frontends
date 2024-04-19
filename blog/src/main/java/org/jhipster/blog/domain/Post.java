@@ -25,14 +25,14 @@ public class Post implements Serializable {
     @GeneratedValue(UUIDStringGenerator.class)
     private String id;
 
-    @NotNull
+    @NotNull(message = "must not be null")
     @Property("title")
     private String title;
 
     @Property("content")
     private String content;
 
-    @NotNull
+    @NotNull(message = "must not be null")
     @Property("date")
     private Instant date;
 

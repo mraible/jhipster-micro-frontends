@@ -2,13 +2,14 @@ package org.jhipster.blog.web.rest;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.hamcrest.Matchers.hasItem;
+import static org.hamcrest.Matchers.is;
 import static org.jhipster.blog.domain.BlogAsserts.*;
 import static org.jhipster.blog.web.rest.TestUtil.createUpdateProxyForBean;
-import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
+import static org.springframework.security.test.web.reactive.server.SecurityMockServerConfigurers.csrf;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import java.time.Duration;
+import java.util.List;
 import java.util.UUID;
 import org.jhipster.blog.IntegrationTest;
 import org.jhipster.blog.domain.Blog;
@@ -17,16 +18,16 @@ import org.jhipster.blog.repository.UserRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
+import org.springframework.boot.test.autoconfigure.web.reactive.AutoConfigureWebTestClient;
 import org.springframework.http.MediaType;
 import org.springframework.security.test.context.support.WithMockUser;
-import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.reactive.server.WebTestClient;
 
 /**
  * Integration tests for the {@link BlogResource} REST controller.
  */
 @IntegrationTest
-@AutoConfigureMockMvc
+@AutoConfigureWebTestClient(timeout = IntegrationTest.DEFAULT_ENTITY_TIMEOUT)
 @WithMockUser
 class BlogResourceIT {
 
@@ -49,7 +50,7 @@ class BlogResourceIT {
     private UserRepository userRepository;
 
     @Autowired
-    private MockMvc restBlogMockMvc;
+    private WebTestClient webTestClient;
 
     private Blog blog;
 
@@ -76,8 +77,13 @@ class BlogResourceIT {
     }
 
     @BeforeEach
+    public void setupCsrf() {
+        webTestClient = webTestClient.mutateWith(csrf());
+    }
+
+    @BeforeEach
     public void initTest() {
-        blogRepository.deleteAll();
+        blogRepository.deleteAll().block();
         blog = createEntity();
     }
 
@@ -85,15 +91,17 @@ class BlogResourceIT {
     void createBlog() throws Exception {
         long databaseSizeBeforeCreate = getRepositoryCount();
         // Create the Blog
-        var returnedBlog = om.readValue(
-            restBlogMockMvc
-                .perform(post(ENTITY_API_URL).with(csrf()).contentType(MediaType.APPLICATION_JSON).content(om.writeValueAsBytes(blog)))
-                .andExpect(status().isCreated())
-                .andReturn()
-                .getResponse()
-                .getContentAsString(),
-            Blog.class
-        );
+        var returnedBlog = webTestClient
+            .post()
+            .uri(ENTITY_API_URL)
+            .contentType(MediaType.APPLICATION_JSON)
+            .bodyValue(om.writeValueAsBytes(blog))
+            .exchange()
+            .expectStatus()
+            .isCreated()
+            .expectBody(Blog.class)
+            .returnResult()
+            .getResponseBody();
 
         // Validate the Blog in the database
         assertIncrementedRepositoryCount(databaseSizeBeforeCreate);
@@ -108,9 +116,14 @@ class BlogResourceIT {
         long databaseSizeBeforeCreate = getRepositoryCount();
 
         // An entity with an existing ID cannot be created, so this API call must fail
-        restBlogMockMvc
-            .perform(post(ENTITY_API_URL).with(csrf()).contentType(MediaType.APPLICATION_JSON).content(om.writeValueAsBytes(blog)))
-            .andExpect(status().isBadRequest());
+        webTestClient
+            .post()
+            .uri(ENTITY_API_URL)
+            .contentType(MediaType.APPLICATION_JSON)
+            .bodyValue(om.writeValueAsBytes(blog))
+            .exchange()
+            .expectStatus()
+            .isBadRequest();
 
         // Validate the Blog in the database
         assertSameRepositoryCount(databaseSizeBeforeCreate);
@@ -124,9 +137,14 @@ class BlogResourceIT {
 
         // Create the Blog, which fails.
 
-        restBlogMockMvc
-            .perform(post(ENTITY_API_URL).with(csrf()).contentType(MediaType.APPLICATION_JSON).content(om.writeValueAsBytes(blog)))
-            .andExpect(status().isBadRequest());
+        webTestClient
+            .post()
+            .uri(ENTITY_API_URL)
+            .contentType(MediaType.APPLICATION_JSON)
+            .bodyValue(om.writeValueAsBytes(blog))
+            .exchange()
+            .expectStatus()
+            .isBadRequest();
 
         assertSameRepositoryCount(databaseSizeBeforeTest);
     }
@@ -139,66 +157,120 @@ class BlogResourceIT {
 
         // Create the Blog, which fails.
 
-        restBlogMockMvc
-            .perform(post(ENTITY_API_URL).with(csrf()).contentType(MediaType.APPLICATION_JSON).content(om.writeValueAsBytes(blog)))
-            .andExpect(status().isBadRequest());
+        webTestClient
+            .post()
+            .uri(ENTITY_API_URL)
+            .contentType(MediaType.APPLICATION_JSON)
+            .bodyValue(om.writeValueAsBytes(blog))
+            .exchange()
+            .expectStatus()
+            .isBadRequest();
 
         assertSameRepositoryCount(databaseSizeBeforeTest);
     }
 
     @Test
-    void getAllBlogs() throws Exception {
+    void getAllBlogsAsStream() {
         // Initialize the database
-        blogRepository.save(blog);
+        blogRepository.save(blog).block();
+
+        List<Blog> blogList = webTestClient
+            .get()
+            .uri(ENTITY_API_URL)
+            .accept(MediaType.APPLICATION_NDJSON)
+            .exchange()
+            .expectStatus()
+            .isOk()
+            .expectHeader()
+            .contentTypeCompatibleWith(MediaType.APPLICATION_NDJSON)
+            .returnResult(Blog.class)
+            .getResponseBody()
+            .filter(blog::equals)
+            .collectList()
+            .block(Duration.ofSeconds(5));
+
+        assertThat(blogList).isNotNull();
+        assertThat(blogList).hasSize(1);
+        Blog testBlog = blogList.get(0);
+
+        assertBlogAllPropertiesEquals(blog, testBlog);
+    }
+
+    @Test
+    void getAllBlogs() {
+        // Initialize the database
+        blogRepository.save(blog).block();
 
         // Get all the blogList
-        restBlogMockMvc
-            .perform(get(ENTITY_API_URL + "?sort=id,desc"))
-            .andExpect(status().isOk())
-            .andExpect(content().contentType(MediaType.APPLICATION_JSON_VALUE))
-            .andExpect(jsonPath("$.[*].name").value(hasItem(DEFAULT_NAME)))
-            .andExpect(jsonPath("$.[*].handle").value(hasItem(DEFAULT_HANDLE)));
+        webTestClient
+            .get()
+            .uri(ENTITY_API_URL + "?sort=id,desc")
+            .accept(MediaType.APPLICATION_JSON)
+            .exchange()
+            .expectStatus()
+            .isOk()
+            .expectHeader()
+            .contentType(MediaType.APPLICATION_JSON)
+            .expectBody()
+            .jsonPath("$.[*].name")
+            .value(hasItem(DEFAULT_NAME))
+            .jsonPath("$.[*].handle")
+            .value(hasItem(DEFAULT_HANDLE));
     }
 
     @Test
-    void getBlog() throws Exception {
+    void getBlog() {
         // Initialize the database
-        blogRepository.save(blog);
+        blogRepository.save(blog).block();
 
         // Get the blog
-        restBlogMockMvc
-            .perform(get(ENTITY_API_URL_ID, blog.getId()))
-            .andExpect(status().isOk())
-            .andExpect(content().contentType(MediaType.APPLICATION_JSON_VALUE))
-            .andExpect(jsonPath("$.name").value(DEFAULT_NAME))
-            .andExpect(jsonPath("$.handle").value(DEFAULT_HANDLE));
+        webTestClient
+            .get()
+            .uri(ENTITY_API_URL_ID, blog.getId())
+            .accept(MediaType.APPLICATION_JSON)
+            .exchange()
+            .expectStatus()
+            .isOk()
+            .expectHeader()
+            .contentType(MediaType.APPLICATION_JSON)
+            .expectBody()
+            .jsonPath("$.name")
+            .value(is(DEFAULT_NAME))
+            .jsonPath("$.handle")
+            .value(is(DEFAULT_HANDLE));
     }
 
     @Test
-    void getNonExistingBlog() throws Exception {
+    void getNonExistingBlog() {
         // Get the blog
-        restBlogMockMvc.perform(get(ENTITY_API_URL_ID, Long.MAX_VALUE)).andExpect(status().isNotFound());
+        webTestClient
+            .get()
+            .uri(ENTITY_API_URL_ID, Long.MAX_VALUE)
+            .accept(MediaType.APPLICATION_PROBLEM_JSON)
+            .exchange()
+            .expectStatus()
+            .isNotFound();
     }
 
     @Test
     void putExistingBlog() throws Exception {
         // Initialize the database
-        blogRepository.save(blog);
+        blogRepository.save(blog).block();
 
         long databaseSizeBeforeUpdate = getRepositoryCount();
 
         // Update the blog
-        Blog updatedBlog = blogRepository.findById(blog.getId()).orElseThrow();
+        Blog updatedBlog = blogRepository.findById(blog.getId()).block();
         updatedBlog.name(UPDATED_NAME).handle(UPDATED_HANDLE);
 
-        restBlogMockMvc
-            .perform(
-                put(ENTITY_API_URL_ID, updatedBlog.getId())
-                    .with(csrf())
-                    .contentType(MediaType.APPLICATION_JSON)
-                    .content(om.writeValueAsBytes(updatedBlog))
-            )
-            .andExpect(status().isOk());
+        webTestClient
+            .put()
+            .uri(ENTITY_API_URL_ID, updatedBlog.getId())
+            .contentType(MediaType.APPLICATION_JSON)
+            .bodyValue(om.writeValueAsBytes(updatedBlog))
+            .exchange()
+            .expectStatus()
+            .isOk();
 
         // Validate the Blog in the database
         assertSameRepositoryCount(databaseSizeBeforeUpdate);
@@ -211,14 +283,14 @@ class BlogResourceIT {
         blog.setId(UUID.randomUUID().toString());
 
         // If the entity doesn't have an ID, it will throw BadRequestAlertException
-        restBlogMockMvc
-            .perform(
-                put(ENTITY_API_URL_ID, blog.getId())
-                    .with(csrf())
-                    .contentType(MediaType.APPLICATION_JSON)
-                    .content(om.writeValueAsBytes(blog))
-            )
-            .andExpect(status().isBadRequest());
+        webTestClient
+            .put()
+            .uri(ENTITY_API_URL_ID, blog.getId())
+            .contentType(MediaType.APPLICATION_JSON)
+            .bodyValue(om.writeValueAsBytes(blog))
+            .exchange()
+            .expectStatus()
+            .isBadRequest();
 
         // Validate the Blog in the database
         assertSameRepositoryCount(databaseSizeBeforeUpdate);
@@ -230,14 +302,14 @@ class BlogResourceIT {
         blog.setId(UUID.randomUUID().toString());
 
         // If url ID doesn't match entity ID, it will throw BadRequestAlertException
-        restBlogMockMvc
-            .perform(
-                put(ENTITY_API_URL_ID, UUID.randomUUID().toString())
-                    .with(csrf())
-                    .contentType(MediaType.APPLICATION_JSON)
-                    .content(om.writeValueAsBytes(blog))
-            )
-            .andExpect(status().isBadRequest());
+        webTestClient
+            .put()
+            .uri(ENTITY_API_URL_ID, UUID.randomUUID().toString())
+            .contentType(MediaType.APPLICATION_JSON)
+            .bodyValue(om.writeValueAsBytes(blog))
+            .exchange()
+            .expectStatus()
+            .isBadRequest();
 
         // Validate the Blog in the database
         assertSameRepositoryCount(databaseSizeBeforeUpdate);
@@ -249,9 +321,14 @@ class BlogResourceIT {
         blog.setId(UUID.randomUUID().toString());
 
         // If url ID doesn't match entity ID, it will throw BadRequestAlertException
-        restBlogMockMvc
-            .perform(put(ENTITY_API_URL).with(csrf()).contentType(MediaType.APPLICATION_JSON).content(om.writeValueAsBytes(blog)))
-            .andExpect(status().isMethodNotAllowed());
+        webTestClient
+            .put()
+            .uri(ENTITY_API_URL)
+            .contentType(MediaType.APPLICATION_JSON)
+            .bodyValue(om.writeValueAsBytes(blog))
+            .exchange()
+            .expectStatus()
+            .isEqualTo(405);
 
         // Validate the Blog in the database
         assertSameRepositoryCount(databaseSizeBeforeUpdate);
@@ -260,7 +337,7 @@ class BlogResourceIT {
     @Test
     void partialUpdateBlogWithPatch() throws Exception {
         // Initialize the database
-        blogRepository.save(blog);
+        blogRepository.save(blog).block();
 
         long databaseSizeBeforeUpdate = getRepositoryCount();
 
@@ -268,14 +345,14 @@ class BlogResourceIT {
         Blog partialUpdatedBlog = new Blog();
         partialUpdatedBlog.setId(blog.getId());
 
-        restBlogMockMvc
-            .perform(
-                patch(ENTITY_API_URL_ID, partialUpdatedBlog.getId())
-                    .with(csrf())
-                    .contentType("application/merge-patch+json")
-                    .content(om.writeValueAsBytes(partialUpdatedBlog))
-            )
-            .andExpect(status().isOk());
+        webTestClient
+            .patch()
+            .uri(ENTITY_API_URL_ID, partialUpdatedBlog.getId())
+            .contentType(MediaType.valueOf("application/merge-patch+json"))
+            .bodyValue(om.writeValueAsBytes(partialUpdatedBlog))
+            .exchange()
+            .expectStatus()
+            .isOk();
 
         // Validate the Blog in the database
 
@@ -286,7 +363,7 @@ class BlogResourceIT {
     @Test
     void fullUpdateBlogWithPatch() throws Exception {
         // Initialize the database
-        blogRepository.save(blog);
+        blogRepository.save(blog).block();
 
         long databaseSizeBeforeUpdate = getRepositoryCount();
 
@@ -296,14 +373,14 @@ class BlogResourceIT {
 
         partialUpdatedBlog.name(UPDATED_NAME).handle(UPDATED_HANDLE);
 
-        restBlogMockMvc
-            .perform(
-                patch(ENTITY_API_URL_ID, partialUpdatedBlog.getId())
-                    .with(csrf())
-                    .contentType("application/merge-patch+json")
-                    .content(om.writeValueAsBytes(partialUpdatedBlog))
-            )
-            .andExpect(status().isOk());
+        webTestClient
+            .patch()
+            .uri(ENTITY_API_URL_ID, partialUpdatedBlog.getId())
+            .contentType(MediaType.valueOf("application/merge-patch+json"))
+            .bodyValue(om.writeValueAsBytes(partialUpdatedBlog))
+            .exchange()
+            .expectStatus()
+            .isOk();
 
         // Validate the Blog in the database
 
@@ -317,14 +394,14 @@ class BlogResourceIT {
         blog.setId(UUID.randomUUID().toString());
 
         // If the entity doesn't have an ID, it will throw BadRequestAlertException
-        restBlogMockMvc
-            .perform(
-                patch(ENTITY_API_URL_ID, blog.getId())
-                    .with(csrf())
-                    .contentType("application/merge-patch+json")
-                    .content(om.writeValueAsBytes(blog))
-            )
-            .andExpect(status().isBadRequest());
+        webTestClient
+            .patch()
+            .uri(ENTITY_API_URL_ID, blog.getId())
+            .contentType(MediaType.valueOf("application/merge-patch+json"))
+            .bodyValue(om.writeValueAsBytes(blog))
+            .exchange()
+            .expectStatus()
+            .isBadRequest();
 
         // Validate the Blog in the database
         assertSameRepositoryCount(databaseSizeBeforeUpdate);
@@ -336,14 +413,14 @@ class BlogResourceIT {
         blog.setId(UUID.randomUUID().toString());
 
         // If url ID doesn't match entity ID, it will throw BadRequestAlertException
-        restBlogMockMvc
-            .perform(
-                patch(ENTITY_API_URL_ID, UUID.randomUUID().toString())
-                    .with(csrf())
-                    .contentType("application/merge-patch+json")
-                    .content(om.writeValueAsBytes(blog))
-            )
-            .andExpect(status().isBadRequest());
+        webTestClient
+            .patch()
+            .uri(ENTITY_API_URL_ID, UUID.randomUUID().toString())
+            .contentType(MediaType.valueOf("application/merge-patch+json"))
+            .bodyValue(om.writeValueAsBytes(blog))
+            .exchange()
+            .expectStatus()
+            .isBadRequest();
 
         // Validate the Blog in the database
         assertSameRepositoryCount(databaseSizeBeforeUpdate);
@@ -355,32 +432,41 @@ class BlogResourceIT {
         blog.setId(UUID.randomUUID().toString());
 
         // If url ID doesn't match entity ID, it will throw BadRequestAlertException
-        restBlogMockMvc
-            .perform(patch(ENTITY_API_URL).with(csrf()).contentType("application/merge-patch+json").content(om.writeValueAsBytes(blog)))
-            .andExpect(status().isMethodNotAllowed());
+        webTestClient
+            .patch()
+            .uri(ENTITY_API_URL)
+            .contentType(MediaType.valueOf("application/merge-patch+json"))
+            .bodyValue(om.writeValueAsBytes(blog))
+            .exchange()
+            .expectStatus()
+            .isEqualTo(405);
 
         // Validate the Blog in the database
         assertSameRepositoryCount(databaseSizeBeforeUpdate);
     }
 
     @Test
-    void deleteBlog() throws Exception {
+    void deleteBlog() {
         // Initialize the database
-        blogRepository.save(blog);
+        blogRepository.save(blog).block();
 
         long databaseSizeBeforeDelete = getRepositoryCount();
 
         // Delete the blog
-        restBlogMockMvc
-            .perform(delete(ENTITY_API_URL_ID, blog.getId()).with(csrf()).accept(MediaType.APPLICATION_JSON))
-            .andExpect(status().isNoContent());
+        webTestClient
+            .delete()
+            .uri(ENTITY_API_URL_ID, blog.getId())
+            .accept(MediaType.APPLICATION_JSON)
+            .exchange()
+            .expectStatus()
+            .isNoContent();
 
         // Validate the database contains one less item
         assertDecrementedRepositoryCount(databaseSizeBeforeDelete);
     }
 
     protected long getRepositoryCount() {
-        return blogRepository.count();
+        return blogRepository.count().block();
     }
 
     protected void assertIncrementedRepositoryCount(long countBefore) {
@@ -396,7 +482,7 @@ class BlogResourceIT {
     }
 
     protected Blog getPersistedBlog(Blog blog) {
-        return blogRepository.findById(blog.getId()).orElseThrow();
+        return blogRepository.findById(blog.getId()).block();
     }
 
     protected void assertPersistedBlogToMatchAllProperties(Blog expectedBlog) {

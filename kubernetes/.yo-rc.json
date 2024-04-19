@@ -2,7 +2,7 @@
   "generator-jhipster": {
     "appsFolders": ["gateway", "blog", "store"],
     "clusteredDbApps": ["store"],
-    "dbRandomPassword": "ff3d7dc81ab4f9d202e0c35542301453309dc94174f95668adb0dfad6d0a",
+    "dbRandomPassword": "34ebc515821fb79758493de193903633ca85e6971fce0113a8c13eaee204",
     "deploymentType": "kubernetes",
     "directoryPath": "../",
     "dockerPushCommand": "docker push",
@@ -10,7 +10,7 @@
     "ingressDomain": "",
     "istio": false,
     "jhipsterVersion": "8.3.0",
-    "jwtSecretKey": "ZGMyNmFiMjU0N2U4N2FkMDg4MzhhNGU2MTk2MGM1YzRiZjk1ZmJjMGQ4ODRkZWNmZjczYjU1NzNjNzQ1YjMzMDM3Zjg5MTI2NmNmMjc2MTU5ZWUwMGY2M2U2ZWRmNDUxYjc3Zg==",
+    "jwtSecretKey": "MWM1MzkwNDM0ODM1NGE5Y2ExNDRhNTcxYzQ2MWE3YjhhZGY4MzUyOWU4YTQ1ZTUxMDMwMTI3MjMxOTBlMDVmOGIwNzZlZTk5MTdmY2EwMDUyNjg1ZDkzMzk0NjNlMTMzOTRlNw==",
     "kubernetesNamespace": "demo",
     "kubernetesServiceType": "LoadBalancer",
     "kubernetesStorageClassName": "",

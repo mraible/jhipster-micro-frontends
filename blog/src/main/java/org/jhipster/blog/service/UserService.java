@@ -13,14 +13,14 @@ import org.jhipster.blog.service.dto.AdminUserDTO;
 import org.jhipster.blog.service.dto.UserDTO;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.cache.CacheManager;
-import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.security.authentication.AbstractAuthenticationToken;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.oauth2.client.authentication.OAuth2AuthenticationToken;
 import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationToken;
 import org.springframework.stereotype.Service;
+import reactor.core.publisher.Flux;
+import reactor.core.publisher.Mono;
 
 /**
  * Service class for managing users.
@@ -34,12 +34,9 @@ public class UserService {
 
     private final AuthorityRepository authorityRepository;
 
-    private final CacheManager cacheManager;
-
-    public UserService(UserRepository userRepository, AuthorityRepository authorityRepository, CacheManager cacheManager) {
+    public UserService(UserRepository userRepository, AuthorityRepository authorityRepository) {
         this.userRepository = userRepository;
         this.authorityRepository = authorityRepository;
-        this.cacheManager = cacheManager;
     }
 
     /**
@@ -50,11 +47,12 @@ public class UserService {
      * @param email     email id of user.
      * @param langKey   language key.
      * @param imageUrl  image URL of user.
+     * @return a completed {@link Mono}.
      */
-    public void updateUser(String firstName, String lastName, String email, String langKey, String imageUrl) {
-        SecurityUtils.getCurrentUserLogin()
+    public Mono<Void> updateUser(String firstName, String lastName, String email, String langKey, String imageUrl) {
+        return SecurityUtils.getCurrentUserLogin()
             .flatMap(userRepository::findOneByLogin)
-            .ifPresent(user -> {
+            .flatMap(user -> {
                 user.setFirstName(firstName);
                 user.setLastName(lastName);
                 if (email != null) {
@@ -62,21 +60,37 @@ public class UserService {
                 }
                 user.setLangKey(langKey);
                 user.setImageUrl(imageUrl);
-                userRepository.save(user);
-                this.clearUserCaches(user);
-                log.debug("Changed Information for User: {}", user);
+                return saveUser(user);
+            })
+            .doOnNext(user -> log.debug("Changed Information for User: {}", user))
+            .then();
+    }
+
+    private Mono<User> saveUser(User user) {
+        return SecurityUtils.getCurrentUserLogin()
+            .switchIfEmpty(Mono.just(Constants.SYSTEM))
+            .flatMap(login -> {
+                if (user.getCreatedBy() == null) {
+                    user.setCreatedBy(login);
+                }
+                user.setLastModifiedBy(login);
+                return userRepository.save(user);
             });
     }
 
-    public Page<AdminUserDTO> getAllManagedUsers(Pageable pageable) {
-        return userRepository.findAll(pageable).map(AdminUserDTO::new);
+    public Flux<AdminUserDTO> getAllManagedUsers(Pageable pageable) {
+        return userRepository.findAllByIdNotNull(pageable).map(AdminUserDTO::new);
     }
 
-    public Page<UserDTO> getAllPublicUsers(Pageable pageable) {
+    public Flux<UserDTO> getAllPublicUsers(Pageable pageable) {
         return userRepository.findAllByIdNotNullAndActivatedIsTrue(pageable).map(UserDTO::new);
     }
 
-    public Optional<User> getUserWithAuthoritiesByLogin(String login) {
+    public Mono<Long> countManagedUsers() {
+        return userRepository.count();
+    }
+
+    public Mono<User> getUserWithAuthoritiesByLogin(String login) {
         return userRepository.findOneByLogin(login);
     }
 
@@ -84,49 +98,54 @@ public class UserService {
      * Gets a list of all the authorities.
      * @return a list of all the authorities.
      */
-    public List<String> getAuthorities() {
-        return authorityRepository.findAll().stream().map(Authority::getName).toList();
+    public Flux<String> getAuthorities() {
+        return authorityRepository.findAll().map(Authority::getName);
     }
 
-    private User syncUserWithIdP(Map<String, Object> details, User user) {
+    private Mono<User> syncUserWithIdP(Map<String, Object> details, User user) {
         // save authorities in to sync user roles/groups between IdP and JHipster's local database
-        Collection<String> dbAuthorities = getAuthorities();
         Collection<String> userAuthorities = user.getAuthorities().stream().map(Authority::getName).toList();
-        for (String authority : userAuthorities) {
-            if (!dbAuthorities.contains(authority)) {
-                log.debug("Saving authority '{}' in local database", authority);
-                Authority authorityToSave = new Authority();
-                authorityToSave.setName(authority);
-                authorityRepository.save(authorityToSave);
-            }
-        }
-        // save account in to sync users between IdP and JHipster's local database
-        Optional<User> existingUser = userRepository.findOneByLogin(user.getLogin());
-        if (existingUser.isPresent()) {
-            // if IdP sends last updated information, use it to determine if an update should happen
-            if (details.get("updated_at") != null) {
-                Instant dbModifiedDate = existingUser.orElseThrow().getLastModifiedDate();
-                Instant idpModifiedDate;
-                if (details.get("updated_at") instanceof Instant) {
-                    idpModifiedDate = (Instant) details.get("updated_at");
+
+        return getAuthorities()
+            .collectList()
+            .flatMapMany(dbAuthorities -> {
+                List<Authority> authoritiesToSave = userAuthorities
+                    .stream()
+                    .filter(authority -> !dbAuthorities.contains(authority))
+                    .map(authority -> {
+                        Authority authorityToSave = new Authority();
+                        authorityToSave.setName(authority);
+                        return authorityToSave;
+                    })
+                    .toList();
+                return Flux.fromIterable(authoritiesToSave);
+            })
+            .doOnNext(authority -> log.debug("Saving authority '{}' in local database", authority))
+            .flatMap(authorityRepository::save)
+            .then(userRepository.findOneByLogin(user.getLogin()))
+            .switchIfEmpty(userRepository.save(user))
+            .flatMap(existingUser -> {
+                // if IdP sends last updated information, use it to determine if an update should happen
+                if (details.get("updated_at") != null) {
+                    Instant dbModifiedDate = existingUser.getLastModifiedDate();
+                    Instant idpModifiedDate;
+                    if (details.get("updated_at") instanceof Instant) {
+                        idpModifiedDate = (Instant) details.get("updated_at");
+                    } else {
+                        idpModifiedDate = Instant.ofEpochSecond((Integer) details.get("updated_at"));
+                    }
+                    if (idpModifiedDate.isAfter(dbModifiedDate)) {
+                        log.debug("Updating user '{}' in local database", user.getLogin());
+                        return updateUser(user.getFirstName(), user.getLastName(), user.getEmail(), user.getLangKey(), user.getImageUrl());
+                    }
+                    // no last updated info, blindly update
                 } else {
-                    idpModifiedDate = Instant.ofEpochSecond((Integer) details.get("updated_at"));
-                }
-                if (idpModifiedDate.isAfter(dbModifiedDate)) {
                     log.debug("Updating user '{}' in local database", user.getLogin());
-                    updateUser(user.getFirstName(), user.getLastName(), user.getEmail(), user.getLangKey(), user.getImageUrl());
+                    return updateUser(user.getFirstName(), user.getLastName(), user.getEmail(), user.getLangKey(), user.getImageUrl());
                 }
-                // no last updated info, blindly update
-            } else {
-                log.debug("Updating user '{}' in local database", user.getLogin());
-                updateUser(user.getFirstName(), user.getLastName(), user.getEmail(), user.getLangKey(), user.getImageUrl());
-            }
-        } else {
-            log.debug("Saving user '{}' in local database", user.getLogin());
-            userRepository.save(user);
-            this.clearUserCaches(user);
-        }
-        return user;
+                return Mono.empty();
+            })
+            .thenReturn(user);
     }
 
     /**
@@ -136,7 +155,7 @@ public class UserService {
      * @param authToken the authentication token.
      * @return the user from the authentication.
      */
-    public AdminUserDTO getUserFromAuthentication(AbstractAuthenticationToken authToken) {
+    public Mono<AdminUserDTO> getUserFromAuthentication(AbstractAuthenticationToken authToken) {
         Map<String, Object> attributes;
         if (authToken instanceof OAuth2AuthenticationToken) {
             attributes = ((OAuth2AuthenticationToken) authToken).getPrincipal().getAttributes();
@@ -159,7 +178,7 @@ public class UserService {
                 .collect(Collectors.toSet())
         );
 
-        return new AdminUserDTO(syncUserWithIdP(attributes, user));
+        return syncUserWithIdP(attributes, user).flatMap(u -> Mono.just(new AdminUserDTO(u)));
     }
 
     private static User getUser(Map<String, Object> details) {
@@ -221,12 +240,5 @@ public class UserService {
         }
         user.setActivated(activated);
         return user;
-    }
-
-    private void clearUserCaches(User user) {
-        Objects.requireNonNull(cacheManager.getCache(UserRepository.USERS_BY_LOGIN_CACHE)).evict(user.getLogin());
-        if (user.getEmail() != null) {
-            Objects.requireNonNull(cacheManager.getCache(UserRepository.USERS_BY_EMAIL_CACHE)).evict(user.getEmail());
-        }
     }
 }
