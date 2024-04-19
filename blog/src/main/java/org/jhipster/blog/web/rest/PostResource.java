@@ -6,22 +6,25 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.List;
 import java.util.Objects;
-import java.util.Optional;
 import org.jhipster.blog.domain.Post;
 import org.jhipster.blog.repository.PostRepository;
 import org.jhipster.blog.web.rest.errors.BadRequestAlertException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
-import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.http.server.reactive.ServerHttpRequest;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
+import org.springframework.web.server.ResponseStatusException;
+import org.springframework.web.util.ForwardedHeaderUtils;
+import reactor.core.publisher.Mono;
 import tech.jhipster.web.util.HeaderUtil;
 import tech.jhipster.web.util.PaginationUtil;
-import tech.jhipster.web.util.ResponseUtil;
+import tech.jhipster.web.util.reactive.ResponseUtil;
 
 /**
  * REST controller for managing {@link org.jhipster.blog.domain.Post}.
@@ -51,15 +54,22 @@ public class PostResource {
      * @throws URISyntaxException if the Location URI syntax is incorrect.
      */
     @PostMapping("")
-    public ResponseEntity<Post> createPost(@Valid @RequestBody Post post) throws URISyntaxException {
+    public Mono<ResponseEntity<Post>> createPost(@Valid @RequestBody Post post) throws URISyntaxException {
         log.debug("REST request to save Post : {}", post);
         if (post.getId() != null) {
             throw new BadRequestAlertException("A new post cannot already have an ID", ENTITY_NAME, "idexists");
         }
-        post = postRepository.save(post);
-        return ResponseEntity.created(new URI("/api/posts/" + post.getId()))
-            .headers(HeaderUtil.createEntityCreationAlert(applicationName, true, ENTITY_NAME, post.getId()))
-            .body(post);
+        return postRepository
+            .save(post)
+            .map(result -> {
+                try {
+                    return ResponseEntity.created(new URI("/api/posts/" + result.getId()))
+                        .headers(HeaderUtil.createEntityCreationAlert(applicationName, true, ENTITY_NAME, result.getId()))
+                        .body(result);
+                } catch (URISyntaxException e) {
+                    throw new RuntimeException(e);
+                }
+            });
     }
 
     /**
@@ -73,8 +83,10 @@ public class PostResource {
      * @throws URISyntaxException if the Location URI syntax is incorrect.
      */
     @PutMapping("/{id}")
-    public ResponseEntity<Post> updatePost(@PathVariable(value = "id", required = false) final String id, @Valid @RequestBody Post post)
-        throws URISyntaxException {
+    public Mono<ResponseEntity<Post>> updatePost(
+        @PathVariable(value = "id", required = false) final String id,
+        @Valid @RequestBody Post post
+    ) throws URISyntaxException {
         log.debug("REST request to update Post : {}, {}", id, post);
         if (post.getId() == null) {
             throw new BadRequestAlertException("Invalid id", ENTITY_NAME, "idnull");
@@ -83,12 +95,23 @@ public class PostResource {
             throw new BadRequestAlertException("Invalid ID", ENTITY_NAME, "idinvalid");
         }
 
-        if (!postRepository.existsById(id)) {
-            throw new BadRequestAlertException("Entity not found", ENTITY_NAME, "idnotfound");
-        }
+        return postRepository
+            .existsById(id)
+            .flatMap(exists -> {
+                if (!exists) {
+                    return Mono.error(new BadRequestAlertException("Entity not found", ENTITY_NAME, "idnotfound"));
+                }
 
-        post = postRepository.save(post);
-        return ResponseEntity.ok().headers(HeaderUtil.createEntityUpdateAlert(applicationName, true, ENTITY_NAME, post.getId())).body(post);
+                return postRepository
+                    .save(post)
+                    .switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND)))
+                    .map(
+                        result ->
+                            ResponseEntity.ok()
+                                .headers(HeaderUtil.createEntityUpdateAlert(applicationName, true, ENTITY_NAME, result.getId()))
+                                .body(result)
+                    );
+            });
     }
 
     /**
@@ -103,7 +126,7 @@ public class PostResource {
      * @throws URISyntaxException if the Location URI syntax is incorrect.
      */
     @PatchMapping(value = "/{id}", consumes = { "application/json", "application/merge-patch+json" })
-    public ResponseEntity<Post> partialUpdatePost(
+    public Mono<ResponseEntity<Post>> partialUpdatePost(
         @PathVariable(value = "id", required = false) final String id,
         @NotNull @RequestBody Post post
     ) throws URISyntaxException {
@@ -115,42 +138,68 @@ public class PostResource {
             throw new BadRequestAlertException("Invalid ID", ENTITY_NAME, "idinvalid");
         }
 
-        if (!postRepository.existsById(id)) {
-            throw new BadRequestAlertException("Entity not found", ENTITY_NAME, "idnotfound");
-        }
-
-        Optional<Post> result = postRepository
-            .findById(post.getId())
-            .map(existingPost -> {
-                if (post.getTitle() != null) {
-                    existingPost.setTitle(post.getTitle());
-                }
-                if (post.getContent() != null) {
-                    existingPost.setContent(post.getContent());
-                }
-                if (post.getDate() != null) {
-                    existingPost.setDate(post.getDate());
+        return postRepository
+            .existsById(id)
+            .flatMap(exists -> {
+                if (!exists) {
+                    return Mono.error(new BadRequestAlertException("Entity not found", ENTITY_NAME, "idnotfound"));
                 }
 
-                return existingPost;
-            })
-            .map(postRepository::save);
+                Mono<Post> result = postRepository
+                    .findById(post.getId())
+                    .map(existingPost -> {
+                        if (post.getTitle() != null) {
+                            existingPost.setTitle(post.getTitle());
+                        }
+                        if (post.getContent() != null) {
+                            existingPost.setContent(post.getContent());
+                        }
+                        if (post.getDate() != null) {
+                            existingPost.setDate(post.getDate());
+                        }
 
-        return ResponseUtil.wrapOrNotFound(result, HeaderUtil.createEntityUpdateAlert(applicationName, true, ENTITY_NAME, post.getId()));
+                        return existingPost;
+                    })
+                    .flatMap(postRepository::save);
+
+                return result
+                    .switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND)))
+                    .map(
+                        res ->
+                            ResponseEntity.ok()
+                                .headers(HeaderUtil.createEntityUpdateAlert(applicationName, true, ENTITY_NAME, res.getId()))
+                                .body(res)
+                    );
+            });
     }
 
     /**
      * {@code GET  /posts} : get all the posts.
      *
      * @param pageable the pagination information.
+     * @param request a {@link ServerHttpRequest} request.
      * @return the {@link ResponseEntity} with status {@code 200 (OK)} and the list of posts in body.
      */
-    @GetMapping("")
-    public ResponseEntity<List<Post>> getAllPosts(@org.springdoc.core.annotations.ParameterObject Pageable pageable) {
+    @GetMapping(value = "", produces = MediaType.APPLICATION_JSON_VALUE)
+    public Mono<ResponseEntity<List<Post>>> getAllPosts(
+        @org.springdoc.core.annotations.ParameterObject Pageable pageable,
+        ServerHttpRequest request
+    ) {
         log.debug("REST request to get a page of Posts");
-        Page<Post> page = postRepository.findAll(pageable);
-        HttpHeaders headers = PaginationUtil.generatePaginationHttpHeaders(ServletUriComponentsBuilder.fromCurrentRequest(), page);
-        return ResponseEntity.ok().headers(headers).body(page.getContent());
+        return postRepository
+            .count()
+            .zipWith(postRepository.findAllBy(pageable).collectList())
+            .map(
+                countWithEntities ->
+                    ResponseEntity.ok()
+                        .headers(
+                            PaginationUtil.generatePaginationHttpHeaders(
+                                ForwardedHeaderUtils.adaptFromForwardedHeaders(request.getURI(), request.getHeaders()),
+                                new PageImpl<>(countWithEntities.getT2(), pageable, countWithEntities.getT1())
+                            )
+                        )
+                        .body(countWithEntities.getT2())
+            );
     }
 
     /**
@@ -160,9 +209,9 @@ public class PostResource {
      * @return the {@link ResponseEntity} with status {@code 200 (OK)} and with body the post, or with status {@code 404 (Not Found)}.
      */
     @GetMapping("/{id}")
-    public ResponseEntity<Post> getPost(@PathVariable("id") String id) {
+    public Mono<ResponseEntity<Post>> getPost(@PathVariable("id") String id) {
         log.debug("REST request to get Post : {}", id);
-        Optional<Post> post = postRepository.findById(id);
+        Mono<Post> post = postRepository.findById(id);
         return ResponseUtil.wrapOrNotFound(post);
     }
 
@@ -173,9 +222,14 @@ public class PostResource {
      * @return the {@link ResponseEntity} with status {@code 204 (NO_CONTENT)}.
      */
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deletePost(@PathVariable("id") String id) {
+    public Mono<ResponseEntity<Void>> deletePost(@PathVariable("id") String id) {
         log.debug("REST request to delete Post : {}", id);
-        postRepository.deleteById(id);
-        return ResponseEntity.noContent().headers(HeaderUtil.createEntityDeletionAlert(applicationName, true, ENTITY_NAME, id)).build();
+        return postRepository
+            .deleteById(id)
+            .then(
+                Mono.just(
+                    ResponseEntity.noContent().headers(HeaderUtil.createEntityDeletionAlert(applicationName, true, ENTITY_NAME, id)).build()
+                )
+            );
     }
 }

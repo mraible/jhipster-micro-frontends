@@ -6,22 +6,25 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.List;
 import java.util.Objects;
-import java.util.Optional;
 import org.jhipster.store.domain.Product;
 import org.jhipster.store.repository.ProductRepository;
 import org.jhipster.store.web.rest.errors.BadRequestAlertException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
-import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.http.server.reactive.ServerHttpRequest;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
+import org.springframework.web.server.ResponseStatusException;
+import org.springframework.web.util.ForwardedHeaderUtils;
+import reactor.core.publisher.Mono;
 import tech.jhipster.web.util.HeaderUtil;
 import tech.jhipster.web.util.PaginationUtil;
-import tech.jhipster.web.util.ResponseUtil;
+import tech.jhipster.web.util.reactive.ResponseUtil;
 
 /**
  * REST controller for managing {@link org.jhipster.store.domain.Product}.
@@ -51,15 +54,22 @@ public class ProductResource {
      * @throws URISyntaxException if the Location URI syntax is incorrect.
      */
     @PostMapping("")
-    public ResponseEntity<Product> createProduct(@Valid @RequestBody Product product) throws URISyntaxException {
+    public Mono<ResponseEntity<Product>> createProduct(@Valid @RequestBody Product product) throws URISyntaxException {
         log.debug("REST request to save Product : {}", product);
         if (product.getId() != null) {
             throw new BadRequestAlertException("A new product cannot already have an ID", ENTITY_NAME, "idexists");
         }
-        product = productRepository.save(product);
-        return ResponseEntity.created(new URI("/api/products/" + product.getId()))
-            .headers(HeaderUtil.createEntityCreationAlert(applicationName, true, ENTITY_NAME, product.getId()))
-            .body(product);
+        return productRepository
+            .save(product)
+            .map(result -> {
+                try {
+                    return ResponseEntity.created(new URI("/api/products/" + result.getId()))
+                        .headers(HeaderUtil.createEntityCreationAlert(applicationName, true, ENTITY_NAME, result.getId()))
+                        .body(result);
+                } catch (URISyntaxException e) {
+                    throw new RuntimeException(e);
+                }
+            });
     }
 
     /**
@@ -73,7 +83,7 @@ public class ProductResource {
      * @throws URISyntaxException if the Location URI syntax is incorrect.
      */
     @PutMapping("/{id}")
-    public ResponseEntity<Product> updateProduct(
+    public Mono<ResponseEntity<Product>> updateProduct(
         @PathVariable(value = "id", required = false) final String id,
         @Valid @RequestBody Product product
     ) throws URISyntaxException {
@@ -85,14 +95,23 @@ public class ProductResource {
             throw new BadRequestAlertException("Invalid ID", ENTITY_NAME, "idinvalid");
         }
 
-        if (!productRepository.existsById(id)) {
-            throw new BadRequestAlertException("Entity not found", ENTITY_NAME, "idnotfound");
-        }
+        return productRepository
+            .existsById(id)
+            .flatMap(exists -> {
+                if (!exists) {
+                    return Mono.error(new BadRequestAlertException("Entity not found", ENTITY_NAME, "idnotfound"));
+                }
 
-        product = productRepository.save(product);
-        return ResponseEntity.ok()
-            .headers(HeaderUtil.createEntityUpdateAlert(applicationName, true, ENTITY_NAME, product.getId()))
-            .body(product);
+                return productRepository
+                    .save(product)
+                    .switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND)))
+                    .map(
+                        result ->
+                            ResponseEntity.ok()
+                                .headers(HeaderUtil.createEntityUpdateAlert(applicationName, true, ENTITY_NAME, result.getId()))
+                                .body(result)
+                    );
+            });
     }
 
     /**
@@ -107,7 +126,7 @@ public class ProductResource {
      * @throws URISyntaxException if the Location URI syntax is incorrect.
      */
     @PatchMapping(value = "/{id}", consumes = { "application/json", "application/merge-patch+json" })
-    public ResponseEntity<Product> partialUpdateProduct(
+    public Mono<ResponseEntity<Product>> partialUpdateProduct(
         @PathVariable(value = "id", required = false) final String id,
         @NotNull @RequestBody Product product
     ) throws URISyntaxException {
@@ -119,45 +138,71 @@ public class ProductResource {
             throw new BadRequestAlertException("Invalid ID", ENTITY_NAME, "idinvalid");
         }
 
-        if (!productRepository.existsById(id)) {
-            throw new BadRequestAlertException("Entity not found", ENTITY_NAME, "idnotfound");
-        }
-
-        Optional<Product> result = productRepository
-            .findById(product.getId())
-            .map(existingProduct -> {
-                if (product.getTitle() != null) {
-                    existingProduct.setTitle(product.getTitle());
-                }
-                if (product.getPrice() != null) {
-                    existingProduct.setPrice(product.getPrice());
-                }
-                if (product.getImage() != null) {
-                    existingProduct.setImage(product.getImage());
-                }
-                if (product.getImageContentType() != null) {
-                    existingProduct.setImageContentType(product.getImageContentType());
+        return productRepository
+            .existsById(id)
+            .flatMap(exists -> {
+                if (!exists) {
+                    return Mono.error(new BadRequestAlertException("Entity not found", ENTITY_NAME, "idnotfound"));
                 }
 
-                return existingProduct;
-            })
-            .map(productRepository::save);
+                Mono<Product> result = productRepository
+                    .findById(product.getId())
+                    .map(existingProduct -> {
+                        if (product.getTitle() != null) {
+                            existingProduct.setTitle(product.getTitle());
+                        }
+                        if (product.getPrice() != null) {
+                            existingProduct.setPrice(product.getPrice());
+                        }
+                        if (product.getImage() != null) {
+                            existingProduct.setImage(product.getImage());
+                        }
+                        if (product.getImageContentType() != null) {
+                            existingProduct.setImageContentType(product.getImageContentType());
+                        }
 
-        return ResponseUtil.wrapOrNotFound(result, HeaderUtil.createEntityUpdateAlert(applicationName, true, ENTITY_NAME, product.getId()));
+                        return existingProduct;
+                    })
+                    .flatMap(productRepository::save);
+
+                return result
+                    .switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND)))
+                    .map(
+                        res ->
+                            ResponseEntity.ok()
+                                .headers(HeaderUtil.createEntityUpdateAlert(applicationName, true, ENTITY_NAME, res.getId()))
+                                .body(res)
+                    );
+            });
     }
 
     /**
      * {@code GET  /products} : get all the products.
      *
      * @param pageable the pagination information.
+     * @param request a {@link ServerHttpRequest} request.
      * @return the {@link ResponseEntity} with status {@code 200 (OK)} and the list of products in body.
      */
-    @GetMapping("")
-    public ResponseEntity<List<Product>> getAllProducts(@org.springdoc.core.annotations.ParameterObject Pageable pageable) {
+    @GetMapping(value = "", produces = MediaType.APPLICATION_JSON_VALUE)
+    public Mono<ResponseEntity<List<Product>>> getAllProducts(
+        @org.springdoc.core.annotations.ParameterObject Pageable pageable,
+        ServerHttpRequest request
+    ) {
         log.debug("REST request to get a page of Products");
-        Page<Product> page = productRepository.findAll(pageable);
-        HttpHeaders headers = PaginationUtil.generatePaginationHttpHeaders(ServletUriComponentsBuilder.fromCurrentRequest(), page);
-        return ResponseEntity.ok().headers(headers).body(page.getContent());
+        return productRepository
+            .count()
+            .zipWith(productRepository.findAllBy(pageable).collectList())
+            .map(
+                countWithEntities ->
+                    ResponseEntity.ok()
+                        .headers(
+                            PaginationUtil.generatePaginationHttpHeaders(
+                                ForwardedHeaderUtils.adaptFromForwardedHeaders(request.getURI(), request.getHeaders()),
+                                new PageImpl<>(countWithEntities.getT2(), pageable, countWithEntities.getT1())
+                            )
+                        )
+                        .body(countWithEntities.getT2())
+            );
     }
 
     /**
@@ -167,9 +212,9 @@ public class ProductResource {
      * @return the {@link ResponseEntity} with status {@code 200 (OK)} and with body the product, or with status {@code 404 (Not Found)}.
      */
     @GetMapping("/{id}")
-    public ResponseEntity<Product> getProduct(@PathVariable("id") String id) {
+    public Mono<ResponseEntity<Product>> getProduct(@PathVariable("id") String id) {
         log.debug("REST request to get Product : {}", id);
-        Optional<Product> product = productRepository.findById(id);
+        Mono<Product> product = productRepository.findById(id);
         return ResponseUtil.wrapOrNotFound(product);
     }
 
@@ -180,9 +225,14 @@ public class ProductResource {
      * @return the {@link ResponseEntity} with status {@code 204 (NO_CONTENT)}.
      */
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deleteProduct(@PathVariable("id") String id) {
+    public Mono<ResponseEntity<Void>> deleteProduct(@PathVariable("id") String id) {
         log.debug("REST request to delete Product : {}", id);
-        productRepository.deleteById(id);
-        return ResponseEntity.noContent().headers(HeaderUtil.createEntityDeletionAlert(applicationName, true, ENTITY_NAME, id)).build();
+        return productRepository
+            .deleteById(id)
+            .then(
+                Mono.just(
+                    ResponseEntity.noContent().headers(HeaderUtil.createEntityDeletionAlert(applicationName, true, ENTITY_NAME, id)).build()
+                )
+            );
     }
 }

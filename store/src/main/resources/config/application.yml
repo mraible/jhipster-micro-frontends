@@ -24,9 +24,11 @@ springdoc:
   api-docs:
     enabled: false
 ---
-feign:
-  circuitbreaker:
-    enabled: true
+reactive:
+  feign:
+    circuit:
+      breaker:
+        enabled: true
   # client:
   #   config:
   #     default:
@@ -48,7 +50,6 @@ management:
           - loggers
           - prometheus
           - threaddump
-          - caches
   endpoint:
     health:
       show-details: when_authorized
@@ -113,7 +114,7 @@ spring:
           enabled: false
   profiles:
     # The commented value for `active` can be replaced with valid Spring profiles to load.
-    # Otherwise, it will be filled in by gradle when building the JAR file
+    # Otherwise, it will be filled in by maven when building the JAR file
     # Either way, it can be overridden by `--spring.profiles.active` value passed in the commandline or `-Dspring.profiles.active` set in `JAVA_OPTS`
     active: #spring.profiles.active#
     group:
@@ -128,7 +129,7 @@ spring:
     basename: i18n/messages
   main:
     allow-bean-definition-overriding: true
-  mvc:
+  webflux:
     problemdetails:
       enabled: true
   task:

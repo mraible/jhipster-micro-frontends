@@ -24,7 +24,7 @@ public class Tag implements Serializable {
     @GeneratedValue(UUIDStringGenerator.class)
     private String id;
 
-    @NotNull
+    @NotNull(message = "must not be null")
     @Size(min = 2)
     @Property("name")
     private String name;

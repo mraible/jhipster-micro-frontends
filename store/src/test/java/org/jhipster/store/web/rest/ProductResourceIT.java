@@ -2,12 +2,11 @@ package org.jhipster.store.web.rest;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.hamcrest.Matchers.hasItem;
+import static org.hamcrest.Matchers.is;
 import static org.jhipster.store.domain.ProductAsserts.*;
 import static org.jhipster.store.web.rest.TestUtil.createUpdateProxyForBean;
 import static org.jhipster.store.web.rest.TestUtil.sameNumber;
-import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
+import static org.springframework.security.test.web.reactive.server.SecurityMockServerConfigurers.csrf;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.math.BigDecimal;
@@ -19,16 +18,16 @@ import org.jhipster.store.repository.ProductRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
+import org.springframework.boot.test.autoconfigure.web.reactive.AutoConfigureWebTestClient;
 import org.springframework.http.MediaType;
 import org.springframework.security.test.context.support.WithMockUser;
-import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.reactive.server.WebTestClient;
 
 /**
  * Integration tests for the {@link ProductResource} REST controller.
  */
 @IntegrationTest
-@AutoConfigureMockMvc
+@AutoConfigureWebTestClient(timeout = IntegrationTest.DEFAULT_ENTITY_TIMEOUT)
 @WithMockUser
 class ProductResourceIT {
 
@@ -53,7 +52,7 @@ class ProductResourceIT {
     private ProductRepository productRepository;
 
     @Autowired
-    private MockMvc restProductMockMvc;
+    private WebTestClient webTestClient;
 
     private Product product;
 
@@ -88,8 +87,13 @@ class ProductResourceIT {
     }
 
     @BeforeEach
+    public void setupCsrf() {
+        webTestClient = webTestClient.mutateWith(csrf());
+    }
+
+    @BeforeEach
     public void initTest() {
-        productRepository.deleteAll();
+        productRepository.deleteAll().block();
         product = createEntity();
     }
 
@@ -97,15 +101,17 @@ class ProductResourceIT {
     void createProduct() throws Exception {
         long databaseSizeBeforeCreate = getRepositoryCount();
         // Create the Product
-        var returnedProduct = om.readValue(
-            restProductMockMvc
-                .perform(post(ENTITY_API_URL).with(csrf()).contentType(MediaType.APPLICATION_JSON).content(om.writeValueAsBytes(product)))
-                .andExpect(status().isCreated())
-                .andReturn()
-                .getResponse()
-                .getContentAsString(),
-            Product.class
-        );
+        var returnedProduct = webTestClient
+            .post()
+            .uri(ENTITY_API_URL)
+            .contentType(MediaType.APPLICATION_JSON)
+            .bodyValue(om.writeValueAsBytes(product))
+            .exchange()
+            .expectStatus()
+            .isCreated()
+            .expectBody(Product.class)
+            .returnResult()
+            .getResponseBody();
 
         // Validate the Product in the database
         assertIncrementedRepositoryCount(databaseSizeBeforeCreate);
@@ -120,9 +126,14 @@ class ProductResourceIT {
         long databaseSizeBeforeCreate = getRepositoryCount();
 
         // An entity with an existing ID cannot be created, so this API call must fail
-        restProductMockMvc
-            .perform(post(ENTITY_API_URL).with(csrf()).contentType(MediaType.APPLICATION_JSON).content(om.writeValueAsBytes(product)))
-            .andExpect(status().isBadRequest());
+        webTestClient
+            .post()
+            .uri(ENTITY_API_URL)
+            .contentType(MediaType.APPLICATION_JSON)
+            .bodyValue(om.writeValueAsBytes(product))
+            .exchange()
+            .expectStatus()
+            .isBadRequest();
 
         // Validate the Product in the database
         assertSameRepositoryCount(databaseSizeBeforeCreate);
@@ -136,9 +147,14 @@ class ProductResourceIT {
 
         // Create the Product, which fails.
 
-        restProductMockMvc
-            .perform(post(ENTITY_API_URL).with(csrf()).contentType(MediaType.APPLICATION_JSON).content(om.writeValueAsBytes(product)))
-            .andExpect(status().isBadRequest());
+        webTestClient
+            .post()
+            .uri(ENTITY_API_URL)
+            .contentType(MediaType.APPLICATION_JSON)
+            .bodyValue(om.writeValueAsBytes(product))
+            .exchange()
+            .expectStatus()
+            .isBadRequest();
 
         assertSameRepositoryCount(databaseSizeBeforeTest);
     }
@@ -151,72 +167,105 @@ class ProductResourceIT {
 
         // Create the Product, which fails.
 
-        restProductMockMvc
-            .perform(post(ENTITY_API_URL).with(csrf()).contentType(MediaType.APPLICATION_JSON).content(om.writeValueAsBytes(product)))
-            .andExpect(status().isBadRequest());
+        webTestClient
+            .post()
+            .uri(ENTITY_API_URL)
+            .contentType(MediaType.APPLICATION_JSON)
+            .bodyValue(om.writeValueAsBytes(product))
+            .exchange()
+            .expectStatus()
+            .isBadRequest();
 
         assertSameRepositoryCount(databaseSizeBeforeTest);
     }
 
     @Test
-    void getAllProducts() throws Exception {
+    void getAllProducts() {
         // Initialize the database
-        productRepository.save(product);
+        productRepository.save(product).block();
 
         // Get all the productList
-        restProductMockMvc
-            .perform(get(ENTITY_API_URL + "?sort=id,desc"))
-            .andExpect(status().isOk())
-            .andExpect(content().contentType(MediaType.APPLICATION_JSON_VALUE))
-            .andExpect(jsonPath("$.[*].id").value(hasItem(product.getId())))
-            .andExpect(jsonPath("$.[*].title").value(hasItem(DEFAULT_TITLE)))
-            .andExpect(jsonPath("$.[*].price").value(hasItem(sameNumber(DEFAULT_PRICE))))
-            .andExpect(jsonPath("$.[*].imageContentType").value(hasItem(DEFAULT_IMAGE_CONTENT_TYPE)))
-            .andExpect(jsonPath("$.[*].image").value(hasItem(Base64.getEncoder().encodeToString(DEFAULT_IMAGE))));
+        webTestClient
+            .get()
+            .uri(ENTITY_API_URL + "?sort=id,desc")
+            .accept(MediaType.APPLICATION_JSON)
+            .exchange()
+            .expectStatus()
+            .isOk()
+            .expectHeader()
+            .contentType(MediaType.APPLICATION_JSON)
+            .expectBody()
+            .jsonPath("$.[*].id")
+            .value(hasItem(product.getId()))
+            .jsonPath("$.[*].title")
+            .value(hasItem(DEFAULT_TITLE))
+            .jsonPath("$.[*].price")
+            .value(hasItem(sameNumber(DEFAULT_PRICE)))
+            .jsonPath("$.[*].imageContentType")
+            .value(hasItem(DEFAULT_IMAGE_CONTENT_TYPE))
+            .jsonPath("$.[*].image")
+            .value(hasItem(Base64.getEncoder().encodeToString(DEFAULT_IMAGE)));
     }
 
     @Test
-    void getProduct() throws Exception {
+    void getProduct() {
         // Initialize the database
-        productRepository.save(product);
+        productRepository.save(product).block();
 
         // Get the product
-        restProductMockMvc
-            .perform(get(ENTITY_API_URL_ID, product.getId()))
-            .andExpect(status().isOk())
-            .andExpect(content().contentType(MediaType.APPLICATION_JSON_VALUE))
-            .andExpect(jsonPath("$.id").value(product.getId()))
-            .andExpect(jsonPath("$.title").value(DEFAULT_TITLE))
-            .andExpect(jsonPath("$.price").value(sameNumber(DEFAULT_PRICE)))
-            .andExpect(jsonPath("$.imageContentType").value(DEFAULT_IMAGE_CONTENT_TYPE))
-            .andExpect(jsonPath("$.image").value(Base64.getEncoder().encodeToString(DEFAULT_IMAGE)));
+        webTestClient
+            .get()
+            .uri(ENTITY_API_URL_ID, product.getId())
+            .accept(MediaType.APPLICATION_JSON)
+            .exchange()
+            .expectStatus()
+            .isOk()
+            .expectHeader()
+            .contentType(MediaType.APPLICATION_JSON)
+            .expectBody()
+            .jsonPath("$.id")
+            .value(is(product.getId()))
+            .jsonPath("$.title")
+            .value(is(DEFAULT_TITLE))
+            .jsonPath("$.price")
+            .value(is(sameNumber(DEFAULT_PRICE)))
+            .jsonPath("$.imageContentType")
+            .value(is(DEFAULT_IMAGE_CONTENT_TYPE))
+            .jsonPath("$.image")
+            .value(is(Base64.getEncoder().encodeToString(DEFAULT_IMAGE)));
     }
 
     @Test
-    void getNonExistingProduct() throws Exception {
+    void getNonExistingProduct() {
         // Get the product
-        restProductMockMvc.perform(get(ENTITY_API_URL_ID, Long.MAX_VALUE)).andExpect(status().isNotFound());
+        webTestClient
+            .get()
+            .uri(ENTITY_API_URL_ID, Long.MAX_VALUE)
+            .accept(MediaType.APPLICATION_PROBLEM_JSON)
+            .exchange()
+            .expectStatus()
+            .isNotFound();
     }
 
     @Test
     void putExistingProduct() throws Exception {
         // Initialize the database
-        productRepository.save(product);
+        productRepository.save(product).block();
 
         long databaseSizeBeforeUpdate = getRepositoryCount();
 
         // Update the product
-        Product updatedProduct = productRepository.findById(product.getId()).orElseThrow();
+        Product updatedProduct = productRepository.findById(product.getId()).block();
         updatedProduct.title(UPDATED_TITLE).price(UPDATED_PRICE).image(UPDATED_IMAGE).imageContentType(UPDATED_IMAGE_CONTENT_TYPE);
 
-        restProductMockMvc
-            .perform(
-                put(ENTITY_API_URL_ID, updatedProduct.getId())
-                    .with(csrf())
-                    .contentType(MediaType.APPLICATION_JSON)
-                    .content(om.writeValueAsBytes(updatedProduct))
-            )
-            .andExpect(status().isOk());
+        webTestClient
+            .put()
+            .uri(ENTITY_API_URL_ID, updatedProduct.getId())
+            .contentType(MediaType.APPLICATION_JSON)
+            .bodyValue(om.writeValueAsBytes(updatedProduct))
+            .exchange()
+            .expectStatus()
+            .isOk();
 
         // Validate the Product in the database
         assertSameRepositoryCount(databaseSizeBeforeUpdate);
@@ -229,14 +278,14 @@ class ProductResourceIT {
         product.setId(UUID.randomUUID().toString());
 
         // If the entity doesn't have an ID, it will throw BadRequestAlertException
-        restProductMockMvc
-            .perform(
-                put(ENTITY_API_URL_ID, product.getId())
-                    .with(csrf())
-                    .contentType(MediaType.APPLICATION_JSON)
-                    .content(om.writeValueAsBytes(product))
-            )
-            .andExpect(status().isBadRequest());
+        webTestClient
+            .put()
+            .uri(ENTITY_API_URL_ID, product.getId())
+            .contentType(MediaType.APPLICATION_JSON)
+            .bodyValue(om.writeValueAsBytes(product))
+            .exchange()
+            .expectStatus()
+            .isBadRequest();
 
         // Validate the Product in the database
         assertSameRepositoryCount(databaseSizeBeforeUpdate);
@@ -248,14 +297,14 @@ class ProductResourceIT {
         product.setId(UUID.randomUUID().toString());
 
         // If url ID doesn't match entity ID, it will throw BadRequestAlertException
-        restProductMockMvc
-            .perform(
-                put(ENTITY_API_URL_ID, UUID.randomUUID().toString())
-                    .with(csrf())
-                    .contentType(MediaType.APPLICATION_JSON)
-                    .content(om.writeValueAsBytes(product))
-            )
-            .andExpect(status().isBadRequest());
+        webTestClient
+            .put()
+            .uri(ENTITY_API_URL_ID, UUID.randomUUID().toString())
+            .contentType(MediaType.APPLICATION_JSON)
+            .bodyValue(om.writeValueAsBytes(product))
+            .exchange()
+            .expectStatus()
+            .isBadRequest();
 
         // Validate the Product in the database
         assertSameRepositoryCount(databaseSizeBeforeUpdate);
@@ -267,9 +316,14 @@ class ProductResourceIT {
         product.setId(UUID.randomUUID().toString());
 
         // If url ID doesn't match entity ID, it will throw BadRequestAlertException
-        restProductMockMvc
-            .perform(put(ENTITY_API_URL).with(csrf()).contentType(MediaType.APPLICATION_JSON).content(om.writeValueAsBytes(product)))
-            .andExpect(status().isMethodNotAllowed());
+        webTestClient
+            .put()
+            .uri(ENTITY_API_URL)
+            .contentType(MediaType.APPLICATION_JSON)
+            .bodyValue(om.writeValueAsBytes(product))
+            .exchange()
+            .expectStatus()
+            .isEqualTo(405);
 
         // Validate the Product in the database
         assertSameRepositoryCount(databaseSizeBeforeUpdate);
@@ -278,7 +332,7 @@ class ProductResourceIT {
     @Test
     void partialUpdateProductWithPatch() throws Exception {
         // Initialize the database
-        productRepository.save(product);
+        productRepository.save(product).block();
 
         long databaseSizeBeforeUpdate = getRepositoryCount();
 
@@ -288,14 +342,14 @@ class ProductResourceIT {
 
         partialUpdatedProduct.price(UPDATED_PRICE);
 
-        restProductMockMvc
-            .perform(
-                patch(ENTITY_API_URL_ID, partialUpdatedProduct.getId())
-                    .with(csrf())
-                    .contentType("application/merge-patch+json")
-                    .content(om.writeValueAsBytes(partialUpdatedProduct))
-            )
-            .andExpect(status().isOk());
+        webTestClient
+            .patch()
+            .uri(ENTITY_API_URL_ID, partialUpdatedProduct.getId())
+            .contentType(MediaType.valueOf("application/merge-patch+json"))
+            .bodyValue(om.writeValueAsBytes(partialUpdatedProduct))
+            .exchange()
+            .expectStatus()
+            .isOk();
 
         // Validate the Product in the database
 
@@ -306,7 +360,7 @@ class ProductResourceIT {
     @Test
     void fullUpdateProductWithPatch() throws Exception {
         // Initialize the database
-        productRepository.save(product);
+        productRepository.save(product).block();
 
         long databaseSizeBeforeUpdate = getRepositoryCount();
 
@@ -316,14 +370,14 @@ class ProductResourceIT {
 
         partialUpdatedProduct.title(UPDATED_TITLE).price(UPDATED_PRICE).image(UPDATED_IMAGE).imageContentType(UPDATED_IMAGE_CONTENT_TYPE);
 
-        restProductMockMvc
-            .perform(
-                patch(ENTITY_API_URL_ID, partialUpdatedProduct.getId())
-                    .with(csrf())
-                    .contentType("application/merge-patch+json")
-                    .content(om.writeValueAsBytes(partialUpdatedProduct))
-            )
-            .andExpect(status().isOk());
+        webTestClient
+            .patch()
+            .uri(ENTITY_API_URL_ID, partialUpdatedProduct.getId())
+            .contentType(MediaType.valueOf("application/merge-patch+json"))
+            .bodyValue(om.writeValueAsBytes(partialUpdatedProduct))
+            .exchange()
+            .expectStatus()
+            .isOk();
 
         // Validate the Product in the database
 
@@ -337,14 +391,14 @@ class ProductResourceIT {
         product.setId(UUID.randomUUID().toString());
 
         // If the entity doesn't have an ID, it will throw BadRequestAlertException
-        restProductMockMvc
-            .perform(
-                patch(ENTITY_API_URL_ID, product.getId())
-                    .with(csrf())
-                    .contentType("application/merge-patch+json")
-                    .content(om.writeValueAsBytes(product))
-            )
-            .andExpect(status().isBadRequest());
+        webTestClient
+            .patch()
+            .uri(ENTITY_API_URL_ID, product.getId())
+            .contentType(MediaType.valueOf("application/merge-patch+json"))
+            .bodyValue(om.writeValueAsBytes(product))
+            .exchange()
+            .expectStatus()
+            .isBadRequest();
 
         // Validate the Product in the database
         assertSameRepositoryCount(databaseSizeBeforeUpdate);
@@ -356,14 +410,14 @@ class ProductResourceIT {
         product.setId(UUID.randomUUID().toString());
 
         // If url ID doesn't match entity ID, it will throw BadRequestAlertException
-        restProductMockMvc
-            .perform(
-                patch(ENTITY_API_URL_ID, UUID.randomUUID().toString())
-                    .with(csrf())
-                    .contentType("application/merge-patch+json")
-                    .content(om.writeValueAsBytes(product))
-            )
-            .andExpect(status().isBadRequest());
+        webTestClient
+            .patch()
+            .uri(ENTITY_API_URL_ID, UUID.randomUUID().toString())
+            .contentType(MediaType.valueOf("application/merge-patch+json"))
+            .bodyValue(om.writeValueAsBytes(product))
+            .exchange()
+            .expectStatus()
+            .isBadRequest();
 
         // Validate the Product in the database
         assertSameRepositoryCount(databaseSizeBeforeUpdate);
@@ -375,32 +429,41 @@ class ProductResourceIT {
         product.setId(UUID.randomUUID().toString());
 
         // If url ID doesn't match entity ID, it will throw BadRequestAlertException
-        restProductMockMvc
-            .perform(patch(ENTITY_API_URL).with(csrf()).contentType("application/merge-patch+json").content(om.writeValueAsBytes(product)))
-            .andExpect(status().isMethodNotAllowed());
+        webTestClient
+            .patch()
+            .uri(ENTITY_API_URL)
+            .contentType(MediaType.valueOf("application/merge-patch+json"))
+            .bodyValue(om.writeValueAsBytes(product))
+            .exchange()
+            .expectStatus()
+            .isEqualTo(405);
 
         // Validate the Product in the database
         assertSameRepositoryCount(databaseSizeBeforeUpdate);
     }
 
     @Test
-    void deleteProduct() throws Exception {
+    void deleteProduct() {
         // Initialize the database
-        productRepository.save(product);
+        productRepository.save(product).block();
 
         long databaseSizeBeforeDelete = getRepositoryCount();
 
         // Delete the product
-        restProductMockMvc
-            .perform(delete(ENTITY_API_URL_ID, product.getId()).with(csrf()).accept(MediaType.APPLICATION_JSON))
-            .andExpect(status().isNoContent());
+        webTestClient
+            .delete()
+            .uri(ENTITY_API_URL_ID, product.getId())
+            .accept(MediaType.APPLICATION_JSON)
+            .exchange()
+            .expectStatus()
+            .isNoContent();
 
         // Validate the database contains one less item
         assertDecrementedRepositoryCount(databaseSizeBeforeDelete);
     }
 
     protected long getRepositoryCount() {
-        return productRepository.count();
+        return productRepository.count().block();
     }
 
     protected void assertIncrementedRepositoryCount(long countBefore) {
@@ -416,7 +479,7 @@ class ProductResourceIT {
     }
 
     protected Product getPersistedProduct(Product product) {
-        return productRepository.findById(product.getId()).orElseThrow();
+        return productRepository.findById(product.getId()).block();
     }
 
     protected void assertPersistedProductToMatchAllProperties(Product expectedProduct) {

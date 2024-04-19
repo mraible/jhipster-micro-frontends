@@ -2,11 +2,10 @@ package org.jhipster.blog.web.rest;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.hamcrest.Matchers.hasItem;
+import static org.hamcrest.Matchers.is;
 import static org.jhipster.blog.domain.PostAsserts.*;
 import static org.jhipster.blog.web.rest.TestUtil.createUpdateProxyForBean;
-import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
+import static org.springframework.security.test.web.reactive.server.SecurityMockServerConfigurers.csrf;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.time.Instant;
@@ -18,16 +17,16 @@ import org.jhipster.blog.repository.PostRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
+import org.springframework.boot.test.autoconfigure.web.reactive.AutoConfigureWebTestClient;
 import org.springframework.http.MediaType;
 import org.springframework.security.test.context.support.WithMockUser;
-import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.reactive.server.WebTestClient;
 
 /**
  * Integration tests for the {@link PostResource} REST controller.
  */
 @IntegrationTest
-@AutoConfigureMockMvc
+@AutoConfigureWebTestClient(timeout = IntegrationTest.DEFAULT_ENTITY_TIMEOUT)
 @WithMockUser
 class PostResourceIT {
 
@@ -50,7 +49,7 @@ class PostResourceIT {
     private PostRepository postRepository;
 
     @Autowired
-    private MockMvc restPostMockMvc;
+    private WebTestClient webTestClient;
 
     private Post post;
 
@@ -77,8 +76,13 @@ class PostResourceIT {
     }
 
     @BeforeEach
+    public void setupCsrf() {
+        webTestClient = webTestClient.mutateWith(csrf());
+    }
+
+    @BeforeEach
     public void initTest() {
-        postRepository.deleteAll();
+        postRepository.deleteAll().block();
         post = createEntity();
     }
 
@@ -86,15 +90,17 @@ class PostResourceIT {
     void createPost() throws Exception {
         long databaseSizeBeforeCreate = getRepositoryCount();
         // Create the Post
-        var returnedPost = om.readValue(
-            restPostMockMvc
-                .perform(post(ENTITY_API_URL).with(csrf()).contentType(MediaType.APPLICATION_JSON).content(om.writeValueAsBytes(post)))
-                .andExpect(status().isCreated())
-                .andReturn()
-                .getResponse()
-                .getContentAsString(),
-            Post.class
-        );
+        var returnedPost = webTestClient
+            .post()
+            .uri(ENTITY_API_URL)
+            .contentType(MediaType.APPLICATION_JSON)
+            .bodyValue(om.writeValueAsBytes(post))
+            .exchange()
+            .expectStatus()
+            .isCreated()
+            .expectBody(Post.class)
+            .returnResult()
+            .getResponseBody();
 
         // Validate the Post in the database
         assertIncrementedRepositoryCount(databaseSizeBeforeCreate);
@@ -109,9 +115,14 @@ class PostResourceIT {
         long databaseSizeBeforeCreate = getRepositoryCount();
 
         // An entity with an existing ID cannot be created, so this API call must fail
-        restPostMockMvc
-            .perform(post(ENTITY_API_URL).with(csrf()).contentType(MediaType.APPLICATION_JSON).content(om.writeValueAsBytes(post)))
-            .andExpect(status().isBadRequest());
+        webTestClient
+            .post()
+            .uri(ENTITY_API_URL)
+            .contentType(MediaType.APPLICATION_JSON)
+            .bodyValue(om.writeValueAsBytes(post))
+            .exchange()
+            .expectStatus()
+            .isBadRequest();
 
         // Validate the Post in the database
         assertSameRepositoryCount(databaseSizeBeforeCreate);
@@ -125,9 +136,14 @@ class PostResourceIT {
 
         // Create the Post, which fails.
 
-        restPostMockMvc
-            .perform(post(ENTITY_API_URL).with(csrf()).contentType(MediaType.APPLICATION_JSON).content(om.writeValueAsBytes(post)))
-            .andExpect(status().isBadRequest());
+        webTestClient
+            .post()
+            .uri(ENTITY_API_URL)
+            .contentType(MediaType.APPLICATION_JSON)
+            .bodyValue(om.writeValueAsBytes(post))
+            .exchange()
+            .expectStatus()
+            .isBadRequest();
 
         assertSameRepositoryCount(databaseSizeBeforeTest);
     }
@@ -140,68 +156,97 @@ class PostResourceIT {
 
         // Create the Post, which fails.
 
-        restPostMockMvc
-            .perform(post(ENTITY_API_URL).with(csrf()).contentType(MediaType.APPLICATION_JSON).content(om.writeValueAsBytes(post)))
-            .andExpect(status().isBadRequest());
+        webTestClient
+            .post()
+            .uri(ENTITY_API_URL)
+            .contentType(MediaType.APPLICATION_JSON)
+            .bodyValue(om.writeValueAsBytes(post))
+            .exchange()
+            .expectStatus()
+            .isBadRequest();
 
         assertSameRepositoryCount(databaseSizeBeforeTest);
     }
 
     @Test
-    void getAllPosts() throws Exception {
+    void getAllPosts() {
         // Initialize the database
-        postRepository.save(post);
+        postRepository.save(post).block();
 
         // Get all the postList
-        restPostMockMvc
-            .perform(get(ENTITY_API_URL + "?sort=id,desc"))
-            .andExpect(status().isOk())
-            .andExpect(content().contentType(MediaType.APPLICATION_JSON_VALUE))
-            .andExpect(jsonPath("$.[*].title").value(hasItem(DEFAULT_TITLE)))
-            .andExpect(jsonPath("$.[*].content").value(hasItem(DEFAULT_CONTENT.toString())))
-            .andExpect(jsonPath("$.[*].date").value(hasItem(DEFAULT_DATE.toString())));
+        webTestClient
+            .get()
+            .uri(ENTITY_API_URL + "?sort=id,desc")
+            .accept(MediaType.APPLICATION_JSON)
+            .exchange()
+            .expectStatus()
+            .isOk()
+            .expectHeader()
+            .contentType(MediaType.APPLICATION_JSON)
+            .expectBody()
+            .jsonPath("$.[*].title")
+            .value(hasItem(DEFAULT_TITLE))
+            .jsonPath("$.[*].content")
+            .value(hasItem(DEFAULT_CONTENT.toString()))
+            .jsonPath("$.[*].date")
+            .value(hasItem(DEFAULT_DATE.toString()));
     }
 
     @Test
-    void getPost() throws Exception {
+    void getPost() {
         // Initialize the database
-        postRepository.save(post);
+        postRepository.save(post).block();
 
         // Get the post
-        restPostMockMvc
-            .perform(get(ENTITY_API_URL_ID, post.getId()))
-            .andExpect(status().isOk())
-            .andExpect(content().contentType(MediaType.APPLICATION_JSON_VALUE))
-            .andExpect(jsonPath("$.title").value(DEFAULT_TITLE))
-            .andExpect(jsonPath("$.content").value(DEFAULT_CONTENT.toString()))
-            .andExpect(jsonPath("$.date").value(DEFAULT_DATE.toString()));
+        webTestClient
+            .get()
+            .uri(ENTITY_API_URL_ID, post.getId())
+            .accept(MediaType.APPLICATION_JSON)
+            .exchange()
+            .expectStatus()
+            .isOk()
+            .expectHeader()
+            .contentType(MediaType.APPLICATION_JSON)
+            .expectBody()
+            .jsonPath("$.title")
+            .value(is(DEFAULT_TITLE))
+            .jsonPath("$.content")
+            .value(is(DEFAULT_CONTENT.toString()))
+            .jsonPath("$.date")
+            .value(is(DEFAULT_DATE.toString()));
     }
 
     @Test
-    void getNonExistingPost() throws Exception {
+    void getNonExistingPost() {
         // Get the post
-        restPostMockMvc.perform(get(ENTITY_API_URL_ID, Long.MAX_VALUE)).andExpect(status().isNotFound());
+        webTestClient
+            .get()
+            .uri(ENTITY_API_URL_ID, Long.MAX_VALUE)
+            .accept(MediaType.APPLICATION_PROBLEM_JSON)
+            .exchange()
+            .expectStatus()
+            .isNotFound();
     }
 
     @Test
     void putExistingPost() throws Exception {
         // Initialize the database
-        postRepository.save(post);
+        postRepository.save(post).block();
 
         long databaseSizeBeforeUpdate = getRepositoryCount();
 
         // Update the post
-        Post updatedPost = postRepository.findById(post.getId()).orElseThrow();
+        Post updatedPost = postRepository.findById(post.getId()).block();
         updatedPost.title(UPDATED_TITLE).content(UPDATED_CONTENT).date(UPDATED_DATE);
 
-        restPostMockMvc
-            .perform(
-                put(ENTITY_API_URL_ID, updatedPost.getId())
-                    .with(csrf())
-                    .contentType(MediaType.APPLICATION_JSON)
-                    .content(om.writeValueAsBytes(updatedPost))
-            )
-            .andExpect(status().isOk());
+        webTestClient
+            .put()
+            .uri(ENTITY_API_URL_ID, updatedPost.getId())
+            .contentType(MediaType.APPLICATION_JSON)
+            .bodyValue(om.writeValueAsBytes(updatedPost))
+            .exchange()
+            .expectStatus()
+            .isOk();
 
         // Validate the Post in the database
         assertSameRepositoryCount(databaseSizeBeforeUpdate);
@@ -214,14 +259,14 @@ class PostResourceIT {
         post.setId(UUID.randomUUID().toString());
 
         // If the entity doesn't have an ID, it will throw BadRequestAlertException
-        restPostMockMvc
-            .perform(
-                put(ENTITY_API_URL_ID, post.getId())
-                    .with(csrf())
-                    .contentType(MediaType.APPLICATION_JSON)
-                    .content(om.writeValueAsBytes(post))
-            )
-            .andExpect(status().isBadRequest());
+        webTestClient
+            .put()
+            .uri(ENTITY_API_URL_ID, post.getId())
+            .contentType(MediaType.APPLICATION_JSON)
+            .bodyValue(om.writeValueAsBytes(post))
+            .exchange()
+            .expectStatus()
+            .isBadRequest();
 
         // Validate the Post in the database
         assertSameRepositoryCount(databaseSizeBeforeUpdate);
@@ -233,14 +278,14 @@ class PostResourceIT {
         post.setId(UUID.randomUUID().toString());
 
         // If url ID doesn't match entity ID, it will throw BadRequestAlertException
-        restPostMockMvc
-            .perform(
-                put(ENTITY_API_URL_ID, UUID.randomUUID().toString())
-                    .with(csrf())
-                    .contentType(MediaType.APPLICATION_JSON)
-                    .content(om.writeValueAsBytes(post))
-            )
-            .andExpect(status().isBadRequest());
+        webTestClient
+            .put()
+            .uri(ENTITY_API_URL_ID, UUID.randomUUID().toString())
+            .contentType(MediaType.APPLICATION_JSON)
+            .bodyValue(om.writeValueAsBytes(post))
+            .exchange()
+            .expectStatus()
+            .isBadRequest();
 
         // Validate the Post in the database
         assertSameRepositoryCount(databaseSizeBeforeUpdate);
@@ -252,9 +297,14 @@ class PostResourceIT {
         post.setId(UUID.randomUUID().toString());
 
         // If url ID doesn't match entity ID, it will throw BadRequestAlertException
-        restPostMockMvc
-            .perform(put(ENTITY_API_URL).with(csrf()).contentType(MediaType.APPLICATION_JSON).content(om.writeValueAsBytes(post)))
-            .andExpect(status().isMethodNotAllowed());
+        webTestClient
+            .put()
+            .uri(ENTITY_API_URL)
+            .contentType(MediaType.APPLICATION_JSON)
+            .bodyValue(om.writeValueAsBytes(post))
+            .exchange()
+            .expectStatus()
+            .isEqualTo(405);
 
         // Validate the Post in the database
         assertSameRepositoryCount(databaseSizeBeforeUpdate);
@@ -263,7 +313,7 @@ class PostResourceIT {
     @Test
     void partialUpdatePostWithPatch() throws Exception {
         // Initialize the database
-        postRepository.save(post);
+        postRepository.save(post).block();
 
         long databaseSizeBeforeUpdate = getRepositoryCount();
 
@@ -273,14 +323,14 @@ class PostResourceIT {
 
         partialUpdatedPost.content(UPDATED_CONTENT);
 
-        restPostMockMvc
-            .perform(
-                patch(ENTITY_API_URL_ID, partialUpdatedPost.getId())
-                    .with(csrf())
-                    .contentType("application/merge-patch+json")
-                    .content(om.writeValueAsBytes(partialUpdatedPost))
-            )
-            .andExpect(status().isOk());
+        webTestClient
+            .patch()
+            .uri(ENTITY_API_URL_ID, partialUpdatedPost.getId())
+            .contentType(MediaType.valueOf("application/merge-patch+json"))
+            .bodyValue(om.writeValueAsBytes(partialUpdatedPost))
+            .exchange()
+            .expectStatus()
+            .isOk();
 
         // Validate the Post in the database
 
@@ -291,7 +341,7 @@ class PostResourceIT {
     @Test
     void fullUpdatePostWithPatch() throws Exception {
         // Initialize the database
-        postRepository.save(post);
+        postRepository.save(post).block();
 
         long databaseSizeBeforeUpdate = getRepositoryCount();
 
@@ -301,14 +351,14 @@ class PostResourceIT {
 
         partialUpdatedPost.title(UPDATED_TITLE).content(UPDATED_CONTENT).date(UPDATED_DATE);
 
-        restPostMockMvc
-            .perform(
-                patch(ENTITY_API_URL_ID, partialUpdatedPost.getId())
-                    .with(csrf())
-                    .contentType("application/merge-patch+json")
-                    .content(om.writeValueAsBytes(partialUpdatedPost))
-            )
-            .andExpect(status().isOk());
+        webTestClient
+            .patch()
+            .uri(ENTITY_API_URL_ID, partialUpdatedPost.getId())
+            .contentType(MediaType.valueOf("application/merge-patch+json"))
+            .bodyValue(om.writeValueAsBytes(partialUpdatedPost))
+            .exchange()
+            .expectStatus()
+            .isOk();
 
         // Validate the Post in the database
 
@@ -322,14 +372,14 @@ class PostResourceIT {
         post.setId(UUID.randomUUID().toString());
 
         // If the entity doesn't have an ID, it will throw BadRequestAlertException
-        restPostMockMvc
-            .perform(
-                patch(ENTITY_API_URL_ID, post.getId())
-                    .with(csrf())
-                    .contentType("application/merge-patch+json")
-                    .content(om.writeValueAsBytes(post))
-            )
-            .andExpect(status().isBadRequest());
+        webTestClient
+            .patch()
+            .uri(ENTITY_API_URL_ID, post.getId())
+            .contentType(MediaType.valueOf("application/merge-patch+json"))
+            .bodyValue(om.writeValueAsBytes(post))
+            .exchange()
+            .expectStatus()
+            .isBadRequest();
 
         // Validate the Post in the database
         assertSameRepositoryCount(databaseSizeBeforeUpdate);
@@ -341,14 +391,14 @@ class PostResourceIT {
         post.setId(UUID.randomUUID().toString());
 
         // If url ID doesn't match entity ID, it will throw BadRequestAlertException
-        restPostMockMvc
-            .perform(
-                patch(ENTITY_API_URL_ID, UUID.randomUUID().toString())
-                    .with(csrf())
-                    .contentType("application/merge-patch+json")
-                    .content(om.writeValueAsBytes(post))
-            )
-            .andExpect(status().isBadRequest());
+        webTestClient
+            .patch()
+            .uri(ENTITY_API_URL_ID, UUID.randomUUID().toString())
+            .contentType(MediaType.valueOf("application/merge-patch+json"))
+            .bodyValue(om.writeValueAsBytes(post))
+            .exchange()
+            .expectStatus()
+            .isBadRequest();
 
         // Validate the Post in the database
         assertSameRepositoryCount(databaseSizeBeforeUpdate);
@@ -360,32 +410,41 @@ class PostResourceIT {
         post.setId(UUID.randomUUID().toString());
 
         // If url ID doesn't match entity ID, it will throw BadRequestAlertException
-        restPostMockMvc
-            .perform(patch(ENTITY_API_URL).with(csrf()).contentType("application/merge-patch+json").content(om.writeValueAsBytes(post)))
-            .andExpect(status().isMethodNotAllowed());
+        webTestClient
+            .patch()
+            .uri(ENTITY_API_URL)
+            .contentType(MediaType.valueOf("application/merge-patch+json"))
+            .bodyValue(om.writeValueAsBytes(post))
+            .exchange()
+            .expectStatus()
+            .isEqualTo(405);
 
         // Validate the Post in the database
         assertSameRepositoryCount(databaseSizeBeforeUpdate);
     }
 
     @Test
-    void deletePost() throws Exception {
+    void deletePost() {
         // Initialize the database
-        postRepository.save(post);
+        postRepository.save(post).block();
 
         long databaseSizeBeforeDelete = getRepositoryCount();
 
         // Delete the post
-        restPostMockMvc
-            .perform(delete(ENTITY_API_URL_ID, post.getId()).with(csrf()).accept(MediaType.APPLICATION_JSON))
-            .andExpect(status().isNoContent());
+        webTestClient
+            .delete()
+            .uri(ENTITY_API_URL_ID, post.getId())
+            .accept(MediaType.APPLICATION_JSON)
+            .exchange()
+            .expectStatus()
+            .isNoContent();
 
         // Validate the database contains one less item
         assertDecrementedRepositoryCount(databaseSizeBeforeDelete);
     }
 
     protected long getRepositoryCount() {
-        return postRepository.count();
+        return postRepository.count().block();
     }
 
     protected void assertIncrementedRepositoryCount(long countBefore) {
@@ -401,7 +460,7 @@ class PostResourceIT {
     }
 
     protected Post getPersistedPost(Post post) {
-        return postRepository.findById(post.getId()).orElseThrow();
+        return postRepository.findById(post.getId()).block();
     }
 
     protected void assertPersistedPostToMatchAllProperties(Post expectedPost) {

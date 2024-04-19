@@ -5,7 +5,7 @@ application {
     packageName org.jhipster.gateway
     applicationType gateway
     authenticationType oauth2
-    buildTool gradle
+    buildTool maven
     clientFramework react
     prodDatabaseType postgresql
     serviceDiscoveryType consul
@@ -17,11 +17,11 @@ application {
 application {
   config {
     baseName blog
-    reactive false
+    reactive true
     packageName org.jhipster.blog
     applicationType microservice
     authenticationType oauth2
-    buildTool gradle
+    buildTool maven
     clientFramework react
     databaseType neo4j
     enableHibernateCache false
@@ -35,11 +35,11 @@ application {
 application {
   config {
     baseName store
-    reactive false
+    reactive true
     packageName org.jhipster.store
     applicationType microservice
     authenticationType oauth2
-    buildTool gradle
+    buildTool maven
     clientFramework react
     databaseType mongodb
     enableHibernateCache false

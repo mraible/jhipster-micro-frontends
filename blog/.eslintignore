@@ -7,4 +7,4 @@ build/
 node/
 coverage/
 postcss.config.js
-build/resources/main/static/
+target/classes/static/

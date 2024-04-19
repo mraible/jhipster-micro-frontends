@@ -1,22 +1,18 @@
 package org.jhipster.store.web.filter;
 
-import jakarta.servlet.FilterChain;
-import jakarta.servlet.ServletException;
-import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpServletResponse;
-import java.io.IOException;
-import org.springframework.web.filter.OncePerRequestFilter;
+import org.springframework.web.server.ServerWebExchange;
+import org.springframework.web.server.WebFilter;
+import org.springframework.web.server.WebFilterChain;
+import reactor.core.publisher.Mono;
 
-public class SpaWebFilter extends OncePerRequestFilter {
+public class SpaWebFilter implements WebFilter {
 
     /**
      * Forwards any unmapped paths (except those containing a period) to the client {@code index.html}.
      */
     @Override
-    protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
-        throws ServletException, IOException {
-        // Request URI includes the contextPath if any, removed it.
-        String path = request.getRequestURI().substring(request.getContextPath().length());
+    public Mono<Void> filter(ServerWebExchange exchange, WebFilterChain chain) {
+        String path = exchange.getRequest().getURI().getPath();
         if (
             !path.startsWith("/api") &&
             !path.startsWith("/management") &&
@@ -24,10 +20,8 @@ public class SpaWebFilter extends OncePerRequestFilter {
             !path.contains(".") &&
             path.matches("/(.*)")
         ) {
-            request.getRequestDispatcher("/index.html").forward(request, response);
-            return;
+            return chain.filter(exchange.mutate().request(exchange.getRequest().mutate().path("/index.html").build()).build());
         }
-
-        filterChain.doFilter(request, response);
+        return chain.filter(exchange);
     }
 }

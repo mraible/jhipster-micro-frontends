@@ -18,7 +18,7 @@ describe('Post e2e test', () => {
   const postSample = {
     title: 'under usually eyestrain',
     content: 'Li4vZmFrZS1kYXRhL2Jsb2IvaGlwc3Rlci50eHQ=',
-    date: '2024-04-11T09:50:50.406Z',
+    date: '2024-04-18T19:00:39.406Z',
   };
 
   let post;
@@ -172,9 +172,9 @@ describe('Post e2e test', () => {
       cy.get(`[data-cy="content"]`).type('../fake-data/blob/hipster.txt');
       cy.get(`[data-cy="content"]`).invoke('val').should('match', new RegExp('../fake-data/blob/hipster.txt'));
 
-      cy.get(`[data-cy="date"]`).type('2024-04-11T02:17');
+      cy.get(`[data-cy="date"]`).type('2024-04-18T11:27');
       cy.get(`[data-cy="date"]`).blur();
-      cy.get(`[data-cy="date"]`).should('have.value', '2024-04-11T02:17');
+      cy.get(`[data-cy="date"]`).should('have.value', '2024-04-18T11:27');
 
       cy.get(entityCreateSaveButtonSelector).click();
 

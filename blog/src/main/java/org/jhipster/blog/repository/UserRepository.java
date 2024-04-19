@@ -1,27 +1,24 @@
 package org.jhipster.blog.repository;
 
-import java.util.List;
-import java.util.Optional;
 import org.jhipster.blog.domain.User;
-import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.*;
-import org.springframework.data.neo4j.repository.Neo4jRepository;
+import org.springframework.data.neo4j.repository.ReactiveNeo4jRepository;
 import org.springframework.stereotype.Repository;
+import reactor.core.publisher.Flux;
+import reactor.core.publisher.Mono;
 
 /**
- * Spring Data Neo4j repository for the {@link User} entity.
+ * Spring Data Neo4j reactive repository for the {@link User} entity.
  */
 @Repository
-public interface UserRepository extends Neo4jRepository<User, String> {
-    String USERS_BY_LOGIN_CACHE = "usersByLogin";
+public interface UserRepository extends ReactiveNeo4jRepository<User, String> {
+    Mono<User> findOneByLogin(String login);
 
-    String USERS_BY_EMAIL_CACHE = "usersByEmail";
+    Flux<User> findAll();
 
-    @Cacheable(cacheNames = USERS_BY_LOGIN_CACHE)
-    Optional<User> findOneByLogin(String login);
+    Flux<User> findAllByIdNotNull(Pageable pageable);
 
-    // See https://github.com/neo4j/sdn-rx/issues/51
-    List<User> findAll();
+    Flux<User> findAllByIdNotNullAndActivatedIsTrue(Pageable pageable);
 
-    Page<User> findAllByIdNotNullAndActivatedIsTrue(Pageable pageable);
+    Mono<Long> count();
 }
