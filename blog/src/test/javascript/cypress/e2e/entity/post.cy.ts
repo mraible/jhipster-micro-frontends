@@ -15,11 +15,7 @@ describe('Post e2e test', () => {
   const postPageUrlPattern = new RegExp('/blog/post(\\?.*)?$');
   const username = Cypress.env('E2E_USERNAME') ?? 'user';
   const password = Cypress.env('E2E_PASSWORD') ?? 'user';
-  const postSample = {
-    title: 'under usually eyestrain',
-    content: 'Li4vZmFrZS1kYXRhL2Jsb2IvaGlwc3Rlci50eHQ=',
-    date: '2024-04-18T19:00:39.406Z',
-  };
+  const postSample = { title: 'after about toward', content: 'Li4vZmFrZS1kYXRhL2Jsb2IvaGlwc3Rlci50eHQ=', date: '2024-06-27T00:06:14.321Z' };
 
   let post;
 
@@ -48,7 +44,7 @@ describe('Post e2e test', () => {
     cy.visit('/');
     cy.clickOnEntityMenuItem('blog/post');
     cy.wait('@entitiesRequest').then(({ response }) => {
-      if (response.body.length === 0) {
+      if (response?.body.length === 0) {
         cy.get(entityTableSelector).should('not.exist');
       } else {
         cy.get(entityTableSelector).should('exist');
@@ -72,7 +68,7 @@ describe('Post e2e test', () => {
         cy.get(entityCreateSaveButtonSelector).should('exist');
         cy.get(entityCreateCancelButtonSelector).click();
         cy.wait('@entitiesRequest').then(({ response }) => {
-          expect(response.statusCode).to.equal(200);
+          expect(response?.statusCode).to.equal(200);
         });
         cy.url().should('match', postPageUrlPattern);
       });
@@ -113,7 +109,7 @@ describe('Post e2e test', () => {
         cy.getEntityDetailsHeading('post');
         cy.get(entityDetailsBackButtonSelector).click();
         cy.wait('@entitiesRequest').then(({ response }) => {
-          expect(response.statusCode).to.equal(200);
+          expect(response?.statusCode).to.equal(200);
         });
         cy.url().should('match', postPageUrlPattern);
       });
@@ -124,7 +120,7 @@ describe('Post e2e test', () => {
         cy.get(entityCreateSaveButtonSelector).should('exist');
         cy.get(entityCreateCancelButtonSelector).click();
         cy.wait('@entitiesRequest').then(({ response }) => {
-          expect(response.statusCode).to.equal(200);
+          expect(response?.statusCode).to.equal(200);
         });
         cy.url().should('match', postPageUrlPattern);
       });
@@ -134,7 +130,7 @@ describe('Post e2e test', () => {
         cy.getEntityCreateUpdateHeading('Post');
         cy.get(entityCreateSaveButtonSelector).click();
         cy.wait('@entitiesRequest').then(({ response }) => {
-          expect(response.statusCode).to.equal(200);
+          expect(response?.statusCode).to.equal(200);
         });
         cy.url().should('match', postPageUrlPattern);
       });
@@ -146,10 +142,10 @@ describe('Post e2e test', () => {
         cy.getEntityDeleteDialogHeading('post').should('exist');
         cy.get(entityConfirmDeleteButtonSelector).click();
         cy.wait('@deleteEntityRequest').then(({ response }) => {
-          expect(response.statusCode).to.equal(204);
+          expect(response?.statusCode).to.equal(204);
         });
         cy.wait('@entitiesRequest').then(({ response }) => {
-          expect(response.statusCode).to.equal(200);
+          expect(response?.statusCode).to.equal(200);
         });
         cy.url().should('match', postPageUrlPattern);
 
@@ -166,24 +162,24 @@ describe('Post e2e test', () => {
     });
 
     it('should create an instance of Post', () => {
-      cy.get(`[data-cy="title"]`).type('fooey vital bah');
-      cy.get(`[data-cy="title"]`).should('have.value', 'fooey vital bah');
+      cy.get(`[data-cy="title"]`).type('queasily');
+      cy.get(`[data-cy="title"]`).should('have.value', 'queasily');
 
       cy.get(`[data-cy="content"]`).type('../fake-data/blob/hipster.txt');
       cy.get(`[data-cy="content"]`).invoke('val').should('match', new RegExp('../fake-data/blob/hipster.txt'));
 
-      cy.get(`[data-cy="date"]`).type('2024-04-18T11:27');
+      cy.get(`[data-cy="date"]`).type('2024-06-27T03:26');
       cy.get(`[data-cy="date"]`).blur();
-      cy.get(`[data-cy="date"]`).should('have.value', '2024-04-18T11:27');
+      cy.get(`[data-cy="date"]`).should('have.value', '2024-06-27T03:26');
 
       cy.get(entityCreateSaveButtonSelector).click();
 
       cy.wait('@postEntityRequest').then(({ response }) => {
-        expect(response.statusCode).to.equal(201);
+        expect(response?.statusCode).to.equal(201);
         post = response.body;
       });
       cy.wait('@entitiesRequest').then(({ response }) => {
-        expect(response.statusCode).to.equal(200);
+        expect(response?.statusCode).to.equal(200);
       });
       cy.url().should('match', postPageUrlPattern);
     });

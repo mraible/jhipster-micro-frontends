@@ -15,6 +15,7 @@ import java.util.UUID;
 import org.jhipster.store.IntegrationTest;
 import org.jhipster.store.domain.Product;
 import org.jhipster.store.repository.ProductRepository;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -56,6 +57,8 @@ class ProductResourceIT {
 
     private Product product;
 
+    private Product insertedProduct;
+
     /**
      * Create an entity for this test.
      *
@@ -93,8 +96,15 @@ class ProductResourceIT {
 
     @BeforeEach
     public void initTest() {
-        productRepository.deleteAll().block();
         product = createEntity();
+    }
+
+    @AfterEach
+    public void cleanup() {
+        if (insertedProduct != null) {
+            productRepository.delete(insertedProduct).block();
+            insertedProduct = null;
+        }
     }
 
     @Test
@@ -116,6 +126,8 @@ class ProductResourceIT {
         // Validate the Product in the database
         assertIncrementedRepositoryCount(databaseSizeBeforeCreate);
         assertProductUpdatableFieldsEquals(returnedProduct, getPersistedProduct(returnedProduct));
+
+        insertedProduct = returnedProduct;
     }
 
     @Test
@@ -182,7 +194,7 @@ class ProductResourceIT {
     @Test
     void getAllProducts() {
         // Initialize the database
-        productRepository.save(product).block();
+        insertedProduct = productRepository.save(product).block();
 
         // Get all the productList
         webTestClient
@@ -210,7 +222,7 @@ class ProductResourceIT {
     @Test
     void getProduct() {
         // Initialize the database
-        productRepository.save(product).block();
+        insertedProduct = productRepository.save(product).block();
 
         // Get the product
         webTestClient
@@ -250,7 +262,7 @@ class ProductResourceIT {
     @Test
     void putExistingProduct() throws Exception {
         // Initialize the database
-        productRepository.save(product).block();
+        insertedProduct = productRepository.save(product).block();
 
         long databaseSizeBeforeUpdate = getRepositoryCount();
 
@@ -332,7 +344,7 @@ class ProductResourceIT {
     @Test
     void partialUpdateProductWithPatch() throws Exception {
         // Initialize the database
-        productRepository.save(product).block();
+        insertedProduct = productRepository.save(product).block();
 
         long databaseSizeBeforeUpdate = getRepositoryCount();
 
@@ -340,7 +352,7 @@ class ProductResourceIT {
         Product partialUpdatedProduct = new Product();
         partialUpdatedProduct.setId(product.getId());
 
-        partialUpdatedProduct.price(UPDATED_PRICE);
+        partialUpdatedProduct.title(UPDATED_TITLE).price(UPDATED_PRICE);
 
         webTestClient
             .patch()
@@ -360,7 +372,7 @@ class ProductResourceIT {
     @Test
     void fullUpdateProductWithPatch() throws Exception {
         // Initialize the database
-        productRepository.save(product).block();
+        insertedProduct = productRepository.save(product).block();
 
         long databaseSizeBeforeUpdate = getRepositoryCount();
 
@@ -445,7 +457,7 @@ class ProductResourceIT {
     @Test
     void deleteProduct() {
         // Initialize the database
-        productRepository.save(product).block();
+        insertedProduct = productRepository.save(product).block();
 
         long databaseSizeBeforeDelete = getRepositoryCount();
 

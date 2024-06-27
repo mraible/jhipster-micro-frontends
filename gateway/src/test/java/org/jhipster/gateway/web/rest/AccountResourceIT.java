@@ -9,7 +9,9 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import org.jhipster.gateway.IntegrationTest;
+import org.jhipster.gateway.repository.UserRepository;
 import org.jhipster.gateway.security.AuthoritiesConstants;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -26,6 +28,9 @@ import org.springframework.test.web.reactive.server.WebTestClient;
 @AutoConfigureWebTestClient(timeout = IntegrationTest.DEFAULT_TIMEOUT)
 @IntegrationTest
 class AccountResourceIT {
+
+    @Autowired
+    private UserRepository userRepository;
 
     private Map<String, Object> claims;
 
@@ -44,6 +49,13 @@ class AccountResourceIT {
         claims.put("groups", Collections.singletonList(AuthoritiesConstants.ADMIN));
         claims.put("sub", "jane");
         claims.put("email", "jane.doe@jhipster.com");
+    }
+
+    @AfterEach
+    public void cleanup() {
+        // Remove syncUserWithIdp users
+        userRepository.deleteAllUserAuthorities().block();
+        userRepository.deleteAll().block();
     }
 
     @Test

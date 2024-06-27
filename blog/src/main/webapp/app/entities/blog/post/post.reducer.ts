@@ -20,10 +20,14 @@ const apiUrl = 'services/blog/api/posts';
 
 // Actions
 
-export const getEntities = createAsyncThunk('post/fetch_entity_list', async ({ page, size, sort }: IQueryParams) => {
-  const requestUrl = `${apiUrl}?${sort ? `page=${page}&size=${size}&sort=${sort}&` : ''}cacheBuster=${new Date().getTime()}`;
-  return axios.get<IPost[]>(requestUrl);
-});
+export const getEntities = createAsyncThunk(
+  'post/fetch_entity_list',
+  async ({ page, size, sort }: IQueryParams) => {
+    const requestUrl = `${apiUrl}?${sort ? `page=${page}&size=${size}&sort=${sort}&` : ''}cacheBuster=${new Date().getTime()}`;
+    return axios.get<IPost[]>(requestUrl);
+  },
+  { serializeError: serializeAxiosError },
+);
 
 export const getEntity = createAsyncThunk(
   'post/fetch_entity',

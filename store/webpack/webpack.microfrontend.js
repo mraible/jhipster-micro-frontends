@@ -48,9 +48,6 @@ module.exports = ({ serve }) => {
           ),
         },
       }),
-      new DefinePlugin({
-        STORE_I18N_RESOURCES_PREFIX: JSON.stringify(''),
-      }),
     ],
     output: {
       publicPath: 'auto',

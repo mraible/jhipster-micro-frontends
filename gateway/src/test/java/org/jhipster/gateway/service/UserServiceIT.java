@@ -12,6 +12,7 @@ import org.jhipster.gateway.domain.User;
 import org.jhipster.gateway.repository.UserRepository;
 import org.jhipster.gateway.security.AuthoritiesConstants;
 import org.jhipster.gateway.service.dto.AdminUserDTO;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -28,9 +29,9 @@ import org.springframework.security.oauth2.core.user.OAuth2User;
 @IntegrationTest
 class UserServiceIT {
 
-    private static final String DEFAULT_LOGIN = "johndoe";
+    private static final String DEFAULT_LOGIN = "johndoe_service";
 
-    private static final String DEFAULT_EMAIL = "johndoe@localhost";
+    private static final String DEFAULT_EMAIL = "johndoe_service@localhost";
 
     private static final String DEFAULT_FIRSTNAME = "john";
 
@@ -52,8 +53,6 @@ class UserServiceIT {
 
     @BeforeEach
     public void init() {
-        userRepository.deleteAllUserAuthorities().block();
-        userRepository.deleteAll().block();
         user = new User();
         user.setLogin(DEFAULT_LOGIN);
         user.setActivated(true);
@@ -70,6 +69,12 @@ class UserServiceIT {
         userDetails.put("given_name", DEFAULT_FIRSTNAME);
         userDetails.put("family_name", DEFAULT_LASTNAME);
         userDetails.put("picture", DEFAULT_IMAGEURL);
+    }
+
+    @AfterEach
+    public void cleanupAndCheck() {
+        userRepository.deleteAllUserAuthorities().block();
+        userRepository.deleteAll().block();
     }
 
     @Test

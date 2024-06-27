@@ -15,7 +15,7 @@ describe('Product e2e test', () => {
   const productPageUrlPattern = new RegExp('/store/product(\\?.*)?$');
   const username = Cypress.env('E2E_USERNAME') ?? 'user';
   const password = Cypress.env('E2E_PASSWORD') ?? 'user';
-  const productSample = { title: 'since bash', price: 31096.38 };
+  const productSample = { title: 'bankbook', price: 5851.29 };
 
   let product;
 
@@ -44,7 +44,7 @@ describe('Product e2e test', () => {
     cy.visit('/');
     cy.clickOnEntityMenuItem('store/product');
     cy.wait('@entitiesRequest').then(({ response }) => {
-      if (response.body.length === 0) {
+      if (response?.body.length === 0) {
         cy.get(entityTableSelector).should('not.exist');
       } else {
         cy.get(entityTableSelector).should('exist');
@@ -68,7 +68,7 @@ describe('Product e2e test', () => {
         cy.get(entityCreateSaveButtonSelector).should('exist');
         cy.get(entityCreateCancelButtonSelector).click();
         cy.wait('@entitiesRequest').then(({ response }) => {
-          expect(response.statusCode).to.equal(200);
+          expect(response?.statusCode).to.equal(200);
         });
         cy.url().should('match', productPageUrlPattern);
       });
@@ -109,7 +109,7 @@ describe('Product e2e test', () => {
         cy.getEntityDetailsHeading('product');
         cy.get(entityDetailsBackButtonSelector).click();
         cy.wait('@entitiesRequest').then(({ response }) => {
-          expect(response.statusCode).to.equal(200);
+          expect(response?.statusCode).to.equal(200);
         });
         cy.url().should('match', productPageUrlPattern);
       });
@@ -120,7 +120,7 @@ describe('Product e2e test', () => {
         cy.get(entityCreateSaveButtonSelector).should('exist');
         cy.get(entityCreateCancelButtonSelector).click();
         cy.wait('@entitiesRequest').then(({ response }) => {
-          expect(response.statusCode).to.equal(200);
+          expect(response?.statusCode).to.equal(200);
         });
         cy.url().should('match', productPageUrlPattern);
       });
@@ -130,7 +130,7 @@ describe('Product e2e test', () => {
         cy.getEntityCreateUpdateHeading('Product');
         cy.get(entityCreateSaveButtonSelector).click();
         cy.wait('@entitiesRequest').then(({ response }) => {
-          expect(response.statusCode).to.equal(200);
+          expect(response?.statusCode).to.equal(200);
         });
         cy.url().should('match', productPageUrlPattern);
       });
@@ -142,10 +142,10 @@ describe('Product e2e test', () => {
         cy.getEntityDeleteDialogHeading('product').should('exist');
         cy.get(entityConfirmDeleteButtonSelector).click();
         cy.wait('@deleteEntityRequest').then(({ response }) => {
-          expect(response.statusCode).to.equal(204);
+          expect(response?.statusCode).to.equal(204);
         });
         cy.wait('@entitiesRequest').then(({ response }) => {
-          expect(response.statusCode).to.equal(200);
+          expect(response?.statusCode).to.equal(200);
         });
         cy.url().should('match', productPageUrlPattern);
 
@@ -162,11 +162,11 @@ describe('Product e2e test', () => {
     });
 
     it('should create an instance of Product', () => {
-      cy.get(`[data-cy="title"]`).type('kissingly next bulk');
-      cy.get(`[data-cy="title"]`).should('have.value', 'kissingly next bulk');
+      cy.get(`[data-cy="title"]`).type('walnut musty');
+      cy.get(`[data-cy="title"]`).should('have.value', 'walnut musty');
 
-      cy.get(`[data-cy="price"]`).type('29190.05');
-      cy.get(`[data-cy="price"]`).should('have.value', '29190.05');
+      cy.get(`[data-cy="price"]`).type('30132.21');
+      cy.get(`[data-cy="price"]`).should('have.value', '30132.21');
 
       cy.setFieldImageAsBytesOfEntity('image', 'integration-test.png', 'image/png');
 
@@ -175,11 +175,11 @@ describe('Product e2e test', () => {
       cy.get(entityCreateSaveButtonSelector).click();
 
       cy.wait('@postEntityRequest').then(({ response }) => {
-        expect(response.statusCode).to.equal(201);
+        expect(response?.statusCode).to.equal(201);
         product = response.body;
       });
       cy.wait('@entitiesRequest').then(({ response }) => {
-        expect(response.statusCode).to.equal(200);
+        expect(response?.statusCode).to.equal(200);
       });
       cy.url().should('match', productPageUrlPattern);
     });

@@ -18,10 +18,14 @@ const apiUrl = 'services/blog/api/blogs';
 
 // Actions
 
-export const getEntities = createAsyncThunk('blog/fetch_entity_list', async ({ sort }: IQueryParams) => {
-  const requestUrl = `${apiUrl}?${sort ? `sort=${sort}&` : ''}cacheBuster=${new Date().getTime()}`;
-  return axios.get<IBlog[]>(requestUrl);
-});
+export const getEntities = createAsyncThunk(
+  'blog/fetch_entity_list',
+  async ({ sort }: IQueryParams) => {
+    const requestUrl = `${apiUrl}?${sort ? `sort=${sort}&` : ''}cacheBuster=${new Date().getTime()}`;
+    return axios.get<IBlog[]>(requestUrl);
+  },
+  { serializeError: serializeAxiosError },
+);
 
 export const getEntity = createAsyncThunk(
   'blog/fetch_entity',

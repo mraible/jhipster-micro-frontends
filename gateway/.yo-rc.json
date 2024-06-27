@@ -16,12 +16,13 @@
     },
     "authenticationType": "oauth2",
     "baseName": "gateway",
-    "buildTool": "maven",
+    "buildTool": "gradle",
     "clientFramework": "react",
+    "clientTheme": "quartz",
+    "clientThemeVariant": "dark",
     "devServerPort": 9060,
     "entities": [],
-    "jhipsterVersion": "8.3.0",
-    "jwtSecretKey": "ZWVlZTg2OTVhZDcxOWEzY2NiMzE3ZTdlM2M5NDM1ZGMxOGQ3YWVmMDNjMjc2YmU2OGE2NjM1OTc0ODQ3YTlkYjMzMDYwNTc4Y2RhMzgyM2VlNDVjMGYwOWFjMTgxNTZiZmZhNGRjOTY3ZDQxMDVmN2EzNGYyMTkyYTFhYzkxNmQ=",
+    "jhipsterVersion": "8.6.0",
     "languages": ["en"],
     "microfrontends": [
       {
@@ -37,10 +38,10 @@
     "packageName": "org.jhipster.gateway",
     "prodDatabaseType": "postgresql",
     "reactive": true,
+    "serverPort": 8080,
     "serviceDiscoveryType": "consul",
     "skipCommitHook": true,
     "skipUserManagement": true,
-    "syncUserWithIdp": true,
     "testFrameworks": ["cypress"]
   }
 }

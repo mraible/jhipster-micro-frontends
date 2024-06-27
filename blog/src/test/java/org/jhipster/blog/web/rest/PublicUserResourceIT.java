@@ -1,13 +1,13 @@
 package org.jhipster.blog.web.rest;
 
-import static org.assertj.core.api.Assertions.assertThat;
 import static org.springframework.security.test.web.reactive.server.SecurityMockServerConfigurers.csrf;
 
+import java.util.Set;
 import org.jhipster.blog.IntegrationTest;
 import org.jhipster.blog.domain.User;
 import org.jhipster.blog.repository.UserRepository;
 import org.jhipster.blog.security.AuthoritiesConstants;
-import org.jhipster.blog.service.dto.UserDTO;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -41,7 +41,12 @@ class PublicUserResourceIT {
 
     @BeforeEach
     public void initTest() {
-        user = UserResourceIT.initTestUser(userRepository);
+        user = UserResourceIT.initTestUser();
+    }
+
+    @AfterEach
+    public void cleanupAndCheck() {
+        userRepository.deleteAll().block();
     }
 
     @Test
@@ -50,7 +55,7 @@ class PublicUserResourceIT {
         userRepository.save(user).block();
 
         // Get all the users
-        UserDTO foundUser = webTestClient
+        webTestClient
             .get()
             .uri("/api/users?sort=id,desc")
             .accept(MediaType.APPLICATION_JSON)
@@ -59,10 +64,16 @@ class PublicUserResourceIT {
             .isOk()
             .expectHeader()
             .contentType(MediaType.APPLICATION_JSON)
-            .returnResult(UserDTO.class)
-            .getResponseBody()
-            .blockFirst();
-
-        assertThat(foundUser.getLogin()).isEqualTo(DEFAULT_LOGIN);
+            .expectBody()
+            .jsonPath("$.[?(@.id == '%s')].login", user.getId())
+            .isEqualTo(user.getLogin())
+            .jsonPath("$.[?(@.id == '%s')].keys()", user.getId())
+            .isEqualTo(Set.of("id", "login"))
+            .jsonPath("$.[*].email")
+            .doesNotHaveJsonPath()
+            .jsonPath("$.[*].imageUrl")
+            .doesNotHaveJsonPath()
+            .jsonPath("$.[*].langKey")
+            .doesNotHaveJsonPath();
     }
 }

@@ -12,6 +12,7 @@ import java.util.UUID;
 import org.jhipster.blog.IntegrationTest;
 import org.jhipster.blog.domain.Tag;
 import org.jhipster.blog.repository.TagRepository;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -45,6 +46,8 @@ class TagResourceIT {
 
     private Tag tag;
 
+    private Tag insertedTag;
+
     /**
      * Create an entity for this test.
      *
@@ -74,8 +77,15 @@ class TagResourceIT {
 
     @BeforeEach
     public void initTest() {
-        tagRepository.deleteAll().block();
         tag = createEntity();
+    }
+
+    @AfterEach
+    public void cleanup() {
+        if (insertedTag != null) {
+            tagRepository.delete(insertedTag).block();
+            insertedTag = null;
+        }
     }
 
     @Test
@@ -97,6 +107,8 @@ class TagResourceIT {
         // Validate the Tag in the database
         assertIncrementedRepositoryCount(databaseSizeBeforeCreate);
         assertTagUpdatableFieldsEquals(returnedTag, getPersistedTag(returnedTag));
+
+        insertedTag = returnedTag;
     }
 
     @Test
@@ -143,7 +155,7 @@ class TagResourceIT {
     @Test
     void getAllTags() {
         // Initialize the database
-        tagRepository.save(tag).block();
+        insertedTag = tagRepository.save(tag).block();
 
         // Get all the tagList
         webTestClient
@@ -163,7 +175,7 @@ class TagResourceIT {
     @Test
     void getTag() {
         // Initialize the database
-        tagRepository.save(tag).block();
+        insertedTag = tagRepository.save(tag).block();
 
         // Get the tag
         webTestClient
@@ -195,7 +207,7 @@ class TagResourceIT {
     @Test
     void putExistingTag() throws Exception {
         // Initialize the database
-        tagRepository.save(tag).block();
+        insertedTag = tagRepository.save(tag).block();
 
         long databaseSizeBeforeUpdate = getRepositoryCount();
 
@@ -277,15 +289,13 @@ class TagResourceIT {
     @Test
     void partialUpdateTagWithPatch() throws Exception {
         // Initialize the database
-        tagRepository.save(tag).block();
+        insertedTag = tagRepository.save(tag).block();
 
         long databaseSizeBeforeUpdate = getRepositoryCount();
 
         // Update the tag using partial update
         Tag partialUpdatedTag = new Tag();
         partialUpdatedTag.setId(tag.getId());
-
-        partialUpdatedTag.name(UPDATED_NAME);
 
         webTestClient
             .patch()
@@ -305,7 +315,7 @@ class TagResourceIT {
     @Test
     void fullUpdateTagWithPatch() throws Exception {
         // Initialize the database
-        tagRepository.save(tag).block();
+        insertedTag = tagRepository.save(tag).block();
 
         long databaseSizeBeforeUpdate = getRepositoryCount();
 
@@ -390,7 +400,7 @@ class TagResourceIT {
     @Test
     void deleteTag() {
         // Initialize the database
-        tagRepository.save(tag).block();
+        insertedTag = tagRepository.save(tag).block();
 
         long databaseSizeBeforeDelete = getRepositoryCount();
 
