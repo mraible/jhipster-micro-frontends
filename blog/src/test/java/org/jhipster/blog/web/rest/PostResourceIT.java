@@ -14,6 +14,7 @@ import java.util.UUID;
 import org.jhipster.blog.IntegrationTest;
 import org.jhipster.blog.domain.Post;
 import org.jhipster.blog.repository.PostRepository;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -53,6 +54,8 @@ class PostResourceIT {
 
     private Post post;
 
+    private Post insertedPost;
+
     /**
      * Create an entity for this test.
      *
@@ -82,8 +85,15 @@ class PostResourceIT {
 
     @BeforeEach
     public void initTest() {
-        postRepository.deleteAll().block();
         post = createEntity();
+    }
+
+    @AfterEach
+    public void cleanup() {
+        if (insertedPost != null) {
+            postRepository.delete(insertedPost).block();
+            insertedPost = null;
+        }
     }
 
     @Test
@@ -105,6 +115,8 @@ class PostResourceIT {
         // Validate the Post in the database
         assertIncrementedRepositoryCount(databaseSizeBeforeCreate);
         assertPostUpdatableFieldsEquals(returnedPost, getPersistedPost(returnedPost));
+
+        insertedPost = returnedPost;
     }
 
     @Test
@@ -171,7 +183,7 @@ class PostResourceIT {
     @Test
     void getAllPosts() {
         // Initialize the database
-        postRepository.save(post).block();
+        insertedPost = postRepository.save(post).block();
 
         // Get all the postList
         webTestClient
@@ -195,7 +207,7 @@ class PostResourceIT {
     @Test
     void getPost() {
         // Initialize the database
-        postRepository.save(post).block();
+        insertedPost = postRepository.save(post).block();
 
         // Get the post
         webTestClient
@@ -231,7 +243,7 @@ class PostResourceIT {
     @Test
     void putExistingPost() throws Exception {
         // Initialize the database
-        postRepository.save(post).block();
+        insertedPost = postRepository.save(post).block();
 
         long databaseSizeBeforeUpdate = getRepositoryCount();
 
@@ -313,7 +325,7 @@ class PostResourceIT {
     @Test
     void partialUpdatePostWithPatch() throws Exception {
         // Initialize the database
-        postRepository.save(post).block();
+        insertedPost = postRepository.save(post).block();
 
         long databaseSizeBeforeUpdate = getRepositoryCount();
 
@@ -341,7 +353,7 @@ class PostResourceIT {
     @Test
     void fullUpdatePostWithPatch() throws Exception {
         // Initialize the database
-        postRepository.save(post).block();
+        insertedPost = postRepository.save(post).block();
 
         long databaseSizeBeforeUpdate = getRepositoryCount();
 
@@ -426,7 +438,7 @@ class PostResourceIT {
     @Test
     void deletePost() {
         // Initialize the database
-        postRepository.save(post).block();
+        insertedPost = postRepository.save(post).block();
 
         long databaseSizeBeforeDelete = getRepositoryCount();
 

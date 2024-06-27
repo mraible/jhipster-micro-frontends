@@ -1,7 +1,7 @@
 import './home.scss';
 
 import React, { useEffect } from 'react';
-import { Link } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import { Translate } from 'react-jhipster';
 import { Row, Col, Alert } from 'reactstrap';
 
@@ -10,6 +10,9 @@ import { useAppSelector } from 'app/config/store';
 
 export const Home = () => {
   const account = useAppSelector(state => state.authentication.account);
+  const pageLocation = useLocation();
+  const navigate = useNavigate();
+
   useEffect(() => {
     const redirectURL = localStorage.getItem(REDIRECT_URL);
     if (redirectURL) {
@@ -43,7 +46,14 @@ export const Home = () => {
             <Alert color="warning">
               <Translate contentKey="global.messages.info.authenticated.prefix">If you want to </Translate>
 
-              <a href={getLoginUrl()} className="alert-link">
+              <a
+                className="alert-link"
+                onClick={() =>
+                  navigate(getLoginUrl(), {
+                    state: { from: pageLocation },
+                  })
+                }
+              >
                 <Translate contentKey="global.messages.info.authenticated.link">sign in</Translate>
               </a>
               <Translate contentKey="global.messages.info.authenticated.suffix">

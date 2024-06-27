@@ -7,7 +7,7 @@ export const LoginRedirect = () => {
 
   useEffect(() => {
     localStorage.setItem(REDIRECT_URL, pageLocation.state.from.pathname);
-    window.location.reload();
+    window.location.href = '/oauth2/authorization/oidc';
   });
 
   return null;

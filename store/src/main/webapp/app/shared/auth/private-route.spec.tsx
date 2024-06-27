@@ -86,7 +86,7 @@ describe('private-route component', () => {
             </PrivateRoute>
           }
         />
-        <Route path="/oauth2/authorization/oidc" element={<div>Login</div>} />
+        <Route path="/sign-in" element={<div>Login</div>} />
       </Routes>,
       {
         isAuthenticated: false,

@@ -1,9 +1,10 @@
 // Override Bootstrap variables
 @import 'bootstrap-variables';
+@import 'bootswatch/dist/quartz/variables';
 // Import Bootstrap source files from node_modules
 @import 'bootstrap/scss/bootstrap';
+@import 'bootswatch/dist/quartz/bootswatch';
 body {
-  background: #fafafa;
   margin: 0;
 }
 

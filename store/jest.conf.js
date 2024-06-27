@@ -15,8 +15,8 @@ module.exports = {
   testEnvironmentOptions: {
     url: 'http://localhost/',
   },
-  cacheDirectory: '<rootDir>/target/jest-cache',
-  coverageDirectory: '<rootDir>/target/test-results/',
+  cacheDirectory: '<rootDir>/build/jest-cache',
+  coverageDirectory: '<rootDir>/build/test-results/',
   testMatch: ['<rootDir>/src/main/webapp/app/**/@(*.)@(spec.ts?(x))'],
   moduleFileExtensions: ['ts', 'tsx', 'js', 'jsx', 'json', 'node'],
   coveragePathIgnorePatterns: ['<rootDir>/src/test/javascript/'],
@@ -26,8 +26,8 @@ module.exports = {
   }),
   reporters: [
     'default',
-    ['jest-junit', { outputDirectory: './target/test-results/', outputName: 'TESTS-results-jest.xml' }],
-    ['jest-sonar', { outputDirectory: './target/test-results/jest', outputName: 'TESTS-results-sonar.xml' }],
+    ['jest-junit', { outputDirectory: './build/test-results/', outputName: 'TESTS-results-jest.xml' }],
+    ['jest-sonar', { outputDirectory: './build/test-results/jest', outputName: 'TESTS-results-sonar.xml' }],
   ],
   testPathIgnorePatterns: ['<rootDir>/node_modules/'],
   setupFiles: ['<rootDir>/src/main/webapp/app/setup-tests.ts'],

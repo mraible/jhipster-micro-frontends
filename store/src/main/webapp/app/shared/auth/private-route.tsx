@@ -42,7 +42,7 @@ export const PrivateRoute = ({ children, hasAnyAuthorities = [], ...rest }: IOwn
   return (
     <Navigate
       to={{
-        pathname: '/oauth2/authorization/oidc',
+        pathname: '/sign-in',
         search: pageLocation.search,
       }}
       replace

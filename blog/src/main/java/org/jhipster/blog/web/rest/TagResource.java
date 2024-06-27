@@ -33,7 +33,7 @@ import tech.jhipster.web.util.reactive.ResponseUtil;
 @RequestMapping("/api/tags")
 public class TagResource {
 
-    private final Logger log = LoggerFactory.getLogger(TagResource.class);
+    private static final Logger log = LoggerFactory.getLogger(TagResource.class);
 
     private static final String ENTITY_NAME = "blogTag";
 

@@ -121,7 +121,7 @@ spec:
         fsGroup: 1001
       containers:
         - name: consul
-          image: docker.io/bitnami/consul:1.18.1
+          image: docker.io/bitnami/consul:1.19.0
           imagePullPolicy: "IfNotPresent"
           securityContext:
             allowPrivilegeEscalation: false

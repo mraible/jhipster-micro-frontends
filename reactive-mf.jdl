@@ -5,8 +5,10 @@ application {
     packageName org.jhipster.gateway
     applicationType gateway
     authenticationType oauth2
-    buildTool maven
+    buildTool gradle
     clientFramework react
+    clientTheme quartz
+    clientThemeVariant dark
     prodDatabaseType postgresql
     serviceDiscoveryType consul
     testFrameworks [cypress]
@@ -21,7 +23,7 @@ application {
     packageName org.jhipster.blog
     applicationType microservice
     authenticationType oauth2
-    buildTool maven
+    buildTool gradle
     clientFramework react
     databaseType neo4j
     enableHibernateCache false
@@ -39,7 +41,7 @@ application {
     packageName org.jhipster.store
     applicationType microservice
     authenticationType oauth2
-    buildTool maven
+    buildTool gradle
     clientFramework react
     databaseType mongodb
     enableHibernateCache false

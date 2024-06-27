@@ -15,6 +15,7 @@ import org.jhipster.blog.IntegrationTest;
 import org.jhipster.blog.domain.Blog;
 import org.jhipster.blog.repository.BlogRepository;
 import org.jhipster.blog.repository.UserRepository;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -54,6 +55,8 @@ class BlogResourceIT {
 
     private Blog blog;
 
+    private Blog insertedBlog;
+
     /**
      * Create an entity for this test.
      *
@@ -83,8 +86,16 @@ class BlogResourceIT {
 
     @BeforeEach
     public void initTest() {
-        blogRepository.deleteAll().block();
         blog = createEntity();
+    }
+
+    @AfterEach
+    public void cleanup() {
+        if (insertedBlog != null) {
+            blogRepository.delete(insertedBlog).block();
+            insertedBlog = null;
+        }
+        userRepository.deleteAll().block();
     }
 
     @Test
@@ -106,6 +117,8 @@ class BlogResourceIT {
         // Validate the Blog in the database
         assertIncrementedRepositoryCount(databaseSizeBeforeCreate);
         assertBlogUpdatableFieldsEquals(returnedBlog, getPersistedBlog(returnedBlog));
+
+        insertedBlog = returnedBlog;
     }
 
     @Test
@@ -199,7 +212,7 @@ class BlogResourceIT {
     @Test
     void getAllBlogs() {
         // Initialize the database
-        blogRepository.save(blog).block();
+        insertedBlog = blogRepository.save(blog).block();
 
         // Get all the blogList
         webTestClient
@@ -221,7 +234,7 @@ class BlogResourceIT {
     @Test
     void getBlog() {
         // Initialize the database
-        blogRepository.save(blog).block();
+        insertedBlog = blogRepository.save(blog).block();
 
         // Get the blog
         webTestClient
@@ -255,7 +268,7 @@ class BlogResourceIT {
     @Test
     void putExistingBlog() throws Exception {
         // Initialize the database
-        blogRepository.save(blog).block();
+        insertedBlog = blogRepository.save(blog).block();
 
         long databaseSizeBeforeUpdate = getRepositoryCount();
 
@@ -337,13 +350,15 @@ class BlogResourceIT {
     @Test
     void partialUpdateBlogWithPatch() throws Exception {
         // Initialize the database
-        blogRepository.save(blog).block();
+        insertedBlog = blogRepository.save(blog).block();
 
         long databaseSizeBeforeUpdate = getRepositoryCount();
 
         // Update the blog using partial update
         Blog partialUpdatedBlog = new Blog();
         partialUpdatedBlog.setId(blog.getId());
+
+        partialUpdatedBlog.handle(UPDATED_HANDLE);
 
         webTestClient
             .patch()
@@ -363,7 +378,7 @@ class BlogResourceIT {
     @Test
     void fullUpdateBlogWithPatch() throws Exception {
         // Initialize the database
-        blogRepository.save(blog).block();
+        insertedBlog = blogRepository.save(blog).block();
 
         long databaseSizeBeforeUpdate = getRepositoryCount();
 
@@ -448,7 +463,7 @@ class BlogResourceIT {
     @Test
     void deleteBlog() {
         // Initialize the database
-        blogRepository.save(blog).block();
+        insertedBlog = blogRepository.save(blog).block();
 
         long databaseSizeBeforeDelete = getRepositoryCount();
 

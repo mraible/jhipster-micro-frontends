@@ -2,9 +2,7 @@ node_modules/
 src/main/docker/
 jest.conf.js
 webpack/
-target/
 build/
-node/
 coverage/
 postcss.config.js
-target/classes/static/
+build/resources/main/static/

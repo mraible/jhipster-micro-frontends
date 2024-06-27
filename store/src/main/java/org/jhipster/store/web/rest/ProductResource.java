@@ -33,7 +33,7 @@ import tech.jhipster.web.util.reactive.ResponseUtil;
 @RequestMapping("/api/products")
 public class ProductResource {
 
-    private final Logger log = LoggerFactory.getLogger(ProductResource.class);
+    private static final Logger log = LoggerFactory.getLogger(ProductResource.class);
 
     private static final String ENTITY_NAME = "storeProduct";
 
