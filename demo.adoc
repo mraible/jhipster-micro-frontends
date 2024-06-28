@@ -45,6 +45,8 @@ application {
     authenticationType oauth2
     buildTool gradle
     clientFramework react
+    clientTheme quartz
+    clientThemeVariant dark
     prodDatabaseType postgresql
     serviceDiscoveryType consul
     testFrameworks [cypress]
