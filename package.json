@@ -1,4 +1,10 @@
 {
+  "name": "workspaces",
+  "version": "0.0.0",
+  "private": true,
+  "description": "Description for Workspaces",
+  "license": "UNLICENSED",
+  "type": "commonjs",
   "workspaces": {
     "packages": [
       "gateway",
@@ -32,7 +38,12 @@
     "watch:store": "npm run watch --workspace store --if-present",
     "webapp:test": "npm run webapp:test --workspaces --if-present"
   },
+  "dependencies": {},
   "devDependencies": {
-    "concurrently": "8.2.2"
-  }
+    "concurrently": "9.0.1",
+    "prettier": "3.3.3",
+    "prettier-plugin-java": "2.6.4",
+    "prettier-plugin-packagejson": "2.5.2"
+  },
+  "engines": {}
 }

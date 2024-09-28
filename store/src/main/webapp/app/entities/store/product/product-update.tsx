@@ -1,15 +1,12 @@
-import React, { useState, useEffect } from 'react';
+import React, { useEffect } from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
-import { Button, Row, Col, FormText } from 'reactstrap';
-import { isNumber, Translate, translate, ValidatedField, ValidatedForm, ValidatedBlobField } from 'react-jhipster';
+import { Button, Col, Row } from 'reactstrap';
+import { Translate, ValidatedBlobField, ValidatedField, ValidatedForm, isNumber, translate } from 'react-jhipster';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 
-import { convertDateTimeFromServer, convertDateTimeToServer, displayDefaultDateTime } from 'app/shared/util/date-utils';
-import { mapIdList } from 'app/shared/util/entity-utils';
 import { useAppDispatch, useAppSelector } from 'app/config/store';
 
-import { IProduct } from 'app/shared/model/store/product.model';
-import { getEntity, updateEntity, createEntity, reset } from './product.reducer';
+import { createEntity, getEntity, reset, updateEntity } from './product.reducer';
 
 export const ProductUpdate = () => {
   const dispatch = useAppDispatch();
@@ -25,7 +22,7 @@ export const ProductUpdate = () => {
   const updateSuccess = useAppSelector(state => state.store.product.updateSuccess);
 
   const handleClose = () => {
-    navigate('/store/product' + location.search);
+    navigate(`/store/product${location.search}`);
   };
 
   useEffect(() => {
@@ -42,7 +39,6 @@ export const ProductUpdate = () => {
     }
   }, [updateSuccess]);
 
-  // eslint-disable-next-line complexity
   const saveEntity = values => {
     if (values.price !== undefined && typeof values.price !== 'number') {
       values.price = Number(values.price);

@@ -22,7 +22,7 @@ import tech.jhipster.config.JHipsterConstants;
 @EnableConfigurationProperties({ ApplicationProperties.class })
 public class BlogApp {
 
-    private static final Logger log = LoggerFactory.getLogger(BlogApp.class);
+    private static final Logger LOG = LoggerFactory.getLogger(BlogApp.class);
 
     private final Environment env;
 
@@ -44,7 +44,7 @@ public class BlogApp {
             activeProfiles.contains(JHipsterConstants.SPRING_PROFILE_DEVELOPMENT) &&
             activeProfiles.contains(JHipsterConstants.SPRING_PROFILE_PRODUCTION)
         ) {
-            log.error(
+            LOG.error(
                 "You have misconfigured your application! It should not run " + "with both the 'dev' and 'prod' profiles at the same time."
             );
         }
@@ -52,7 +52,7 @@ public class BlogApp {
             activeProfiles.contains(JHipsterConstants.SPRING_PROFILE_DEVELOPMENT) &&
             activeProfiles.contains(JHipsterConstants.SPRING_PROFILE_CLOUD)
         ) {
-            log.error(
+            LOG.error(
                 "You have misconfigured your application! It should not " + "run with both the 'dev' and 'cloud' profiles at the same time."
             );
         }
@@ -81,9 +81,9 @@ public class BlogApp {
         try {
             hostAddress = InetAddress.getLocalHost().getHostAddress();
         } catch (UnknownHostException e) {
-            log.warn("The host name could not be determined, using `localhost` as fallback");
+            LOG.warn("The host name could not be determined, using `localhost` as fallback");
         }
-        log.info(
+        LOG.info(
             CRLFLogConverter.CRLF_SAFE_MARKER,
             """
 
@@ -108,7 +108,7 @@ public class BlogApp {
         if (configServerStatus == null) {
             configServerStatus = "Not found or not setup for this application";
         }
-        log.info(
+        LOG.info(
             CRLFLogConverter.CRLF_SAFE_MARKER,
             "\n----------------------------------------------------------\n\t" +
             "Config Server: \t{}\n----------------------------------------------------------",

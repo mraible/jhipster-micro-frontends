@@ -95,6 +95,8 @@ management:
       repository:
         autotime:
           enabled: true
+    tags:
+      application: ${spring.application.name}
 
 mongock:
   migration-scan-package:
@@ -112,6 +114,11 @@ spring:
       config:
         watch:
           enabled: false
+  docker:
+    compose:
+      enabled: true
+      lifecycle-management: start-only
+      file: src/main/docker/mongodb.yml
   profiles:
     # The commented value for `active` can be replaced with valid Spring profiles to load.
     # Otherwise, it will be filled in by gradle when building the JAR file
@@ -143,9 +150,6 @@ spring:
             client-id: internal
             client-secret: internal
             scope: openid, profile, email, offline_access # last one for refresh tokens
-      resourceserver:
-        jwt:
-          principal-claim-name: preferred_username
   task:
     execution:
       thread-name-prefix: store-task-

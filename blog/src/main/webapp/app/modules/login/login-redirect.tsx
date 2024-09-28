@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import { useEffect } from 'react';
 import { REDIRECT_URL } from 'app/shared/util/url-utils';
 import { useLocation } from 'react-router';
 

@@ -1,11 +1,11 @@
 import React, { useEffect, useState } from 'react';
 import { useLocation, useNavigate, useParams } from 'react-router-dom';
-import { Modal, ModalHeader, ModalBody, ModalFooter, Button } from 'reactstrap';
+import { Button, Modal, ModalBody, ModalFooter, ModalHeader } from 'reactstrap';
 import { Translate } from 'react-jhipster';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 
 import { useAppDispatch, useAppSelector } from 'app/config/store';
-import { getEntity, deleteEntity } from './product.reducer';
+import { deleteEntity, getEntity } from './product.reducer';
 
 export const ProductDeleteDialog = () => {
   const dispatch = useAppDispatch();
@@ -25,7 +25,7 @@ export const ProductDeleteDialog = () => {
   const updateSuccess = useAppSelector(state => state.store.product.updateSuccess);
 
   const handleClose = () => {
-    navigate('/store/product' + pageLocation.search);
+    navigate(`/store/product${pageLocation.search}`);
   };
 
   useEffect(() => {

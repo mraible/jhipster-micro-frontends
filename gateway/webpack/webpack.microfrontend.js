@@ -14,7 +14,7 @@ const shareDependencies = ({ skipList = [] } = {}) =>
       .map(([dependency, version]) => [dependency, { ...sharedDefaults, version, requiredVersion: version }]),
   );
 
-module.exports = ({ serve }) => {
+module.exports = () => {
   return {
     optimization: {
       moduleIds: 'named',

@@ -1,5 +1,7 @@
 package org.jhipster.blog.domain;
 
+import com.fasterxml.jackson.annotation.JsonIdentityInfo;
+import com.fasterxml.jackson.annotation.ObjectIdGenerators;
 import jakarta.validation.constraints.*;
 import java.io.Serializable;
 import java.time.Instant;
@@ -15,6 +17,7 @@ import org.springframework.data.neo4j.core.support.UUIDStringGenerator;
 /**
  * A Post.
  */
+@JsonIdentityInfo(generator = ObjectIdGenerators.PropertyGenerator.class, property = "id", scope = Post.class)
 @Node("post")
 @SuppressWarnings("common-java:DuplicatedBlocks")
 public class Post implements Serializable {

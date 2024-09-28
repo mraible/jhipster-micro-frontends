@@ -19,11 +19,11 @@ spec:
           imagePullPolicy: IfNotPresent
           env:
             - name: INIT_SLEEP_SECONDS
-              value: "5"
+              value: '5'
             - name: CONSUL_URL
               value: consul-headless.demo.svc.cluster.local
             - name: CONSUL_PORT
-              value: "8500"
+              value: '8500'
           volumeMounts:
             - name: config-volume
               mountPath: /config

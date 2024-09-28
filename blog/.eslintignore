@@ -1,8 +1,0 @@
-node_modules/
-src/main/docker/
-jest.conf.js
-webpack/
-build/
-coverage/
-postcss.config.js
-build/resources/main/static/

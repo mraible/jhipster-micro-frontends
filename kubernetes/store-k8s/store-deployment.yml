@@ -8,12 +8,12 @@ spec:
   selector:
     matchLabels:
       app: store
-      version: "v1"
+      version: 'v1'
   template:
     metadata:
       labels:
         app: store
-        version: "v1"
+        version: 'v1'
     spec:
       affinity:
         podAntiAffinity:
@@ -31,8 +31,8 @@ spec:
         - name: init-ds
           image: busybox:latest
           command:
-            - "/bin/sh"
-            - "-c"
+            - '/bin/sh'
+            - '-c'
             - |
               while true
               do
@@ -53,22 +53,22 @@ spec:
             - name: SPRING_CLOUD_CONSUL_HOST
               value: consul-headless.demo.svc.cluster.local
             - name: SPRING_CLOUD_CONSUL_PORT
-              value: "8500"
+              value: '8500'
             - name: SPRING_DATA_MONGODB_URI
-              value: "mongodb://store-mongodb-0.store-mongodb.demo:27017,store-mongodb-1.store-mongodb.demo:27017,store-mongodb-2.store-mongodb.demo:27017/store?waitQueueMultiple=1000"
+              value: 'mongodb://store-mongodb-0.store-mongodb.demo:27017,store-mongodb-1.store-mongodb.demo:27017,store-mongodb-2.store-mongodb.demo:27017/store?waitQueueMultiple=1000'
             - name: MANAGEMENT_TRACING_BAGGAGE_REMOTE_FIELDS
-              value: "x-request-id,x-ot-span-context"
+              value: 'x-request-id,x-ot-span-context'
             - name: JAVA_OPTS
-              value: " -Xmx256m -Xms256m"
+              value: ' -Xmx256m -Xms256m'
             - name: SERVER_SHUTDOWN
               value: graceful
           resources:
             requests:
-              memory: "512Mi"
-              cpu: "500m"
+              memory: '512Mi'
+              cpu: '500m'
             limits:
-              memory: "1Gi"
-              cpu: "1"
+              memory: '1Gi'
+              cpu: '1'
           ports:
             - name: http
               containerPort: 8082

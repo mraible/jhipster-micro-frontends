@@ -33,7 +33,7 @@ import tech.jhipster.web.util.reactive.ResponseUtil;
 @RequestMapping("/api/posts")
 public class PostResource {
 
-    private static final Logger log = LoggerFactory.getLogger(PostResource.class);
+    private static final Logger LOG = LoggerFactory.getLogger(PostResource.class);
 
     private static final String ENTITY_NAME = "blogPost";
 
@@ -55,7 +55,7 @@ public class PostResource {
      */
     @PostMapping("")
     public Mono<ResponseEntity<Post>> createPost(@Valid @RequestBody Post post) throws URISyntaxException {
-        log.debug("REST request to save Post : {}", post);
+        LOG.debug("REST request to save Post : {}", post);
         if (post.getId() != null) {
             throw new BadRequestAlertException("A new post cannot already have an ID", ENTITY_NAME, "idexists");
         }
@@ -87,7 +87,7 @@ public class PostResource {
         @PathVariable(value = "id", required = false) final String id,
         @Valid @RequestBody Post post
     ) throws URISyntaxException {
-        log.debug("REST request to update Post : {}, {}", id, post);
+        LOG.debug("REST request to update Post : {}, {}", id, post);
         if (post.getId() == null) {
             throw new BadRequestAlertException("Invalid id", ENTITY_NAME, "idnull");
         }
@@ -105,11 +105,10 @@ public class PostResource {
                 return postRepository
                     .save(post)
                     .switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND)))
-                    .map(
-                        result ->
-                            ResponseEntity.ok()
-                                .headers(HeaderUtil.createEntityUpdateAlert(applicationName, true, ENTITY_NAME, result.getId()))
-                                .body(result)
+                    .map(result ->
+                        ResponseEntity.ok()
+                            .headers(HeaderUtil.createEntityUpdateAlert(applicationName, true, ENTITY_NAME, result.getId()))
+                            .body(result)
                     );
             });
     }
@@ -130,7 +129,7 @@ public class PostResource {
         @PathVariable(value = "id", required = false) final String id,
         @NotNull @RequestBody Post post
     ) throws URISyntaxException {
-        log.debug("REST request to partial update Post partially : {}, {}", id, post);
+        LOG.debug("REST request to partial update Post partially : {}, {}", id, post);
         if (post.getId() == null) {
             throw new BadRequestAlertException("Invalid id", ENTITY_NAME, "idnull");
         }
@@ -164,11 +163,10 @@ public class PostResource {
 
                 return result
                     .switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND)))
-                    .map(
-                        res ->
-                            ResponseEntity.ok()
-                                .headers(HeaderUtil.createEntityUpdateAlert(applicationName, true, ENTITY_NAME, res.getId()))
-                                .body(res)
+                    .map(res ->
+                        ResponseEntity.ok()
+                            .headers(HeaderUtil.createEntityUpdateAlert(applicationName, true, ENTITY_NAME, res.getId()))
+                            .body(res)
                     );
             });
     }
@@ -185,20 +183,19 @@ public class PostResource {
         @org.springdoc.core.annotations.ParameterObject Pageable pageable,
         ServerHttpRequest request
     ) {
-        log.debug("REST request to get a page of Posts");
+        LOG.debug("REST request to get a page of Posts");
         return postRepository
             .count()
             .zipWith(postRepository.findAllBy(pageable).collectList())
-            .map(
-                countWithEntities ->
-                    ResponseEntity.ok()
-                        .headers(
-                            PaginationUtil.generatePaginationHttpHeaders(
-                                ForwardedHeaderUtils.adaptFromForwardedHeaders(request.getURI(), request.getHeaders()),
-                                new PageImpl<>(countWithEntities.getT2(), pageable, countWithEntities.getT1())
-                            )
+            .map(countWithEntities ->
+                ResponseEntity.ok()
+                    .headers(
+                        PaginationUtil.generatePaginationHttpHeaders(
+                            ForwardedHeaderUtils.adaptFromForwardedHeaders(request.getURI(), request.getHeaders()),
+                            new PageImpl<>(countWithEntities.getT2(), pageable, countWithEntities.getT1())
                         )
-                        .body(countWithEntities.getT2())
+                    )
+                    .body(countWithEntities.getT2())
             );
     }
 
@@ -210,7 +207,7 @@ public class PostResource {
      */
     @GetMapping("/{id}")
     public Mono<ResponseEntity<Post>> getPost(@PathVariable("id") String id) {
-        log.debug("REST request to get Post : {}", id);
+        LOG.debug("REST request to get Post : {}", id);
         Mono<Post> post = postRepository.findById(id);
         return ResponseUtil.wrapOrNotFound(post);
     }
@@ -223,7 +220,7 @@ public class PostResource {
      */
     @DeleteMapping("/{id}")
     public Mono<ResponseEntity<Void>> deletePost(@PathVariable("id") String id) {
-        log.debug("REST request to delete Post : {}", id);
+        LOG.debug("REST request to delete Post : {}", id);
         return postRepository
             .deleteById(id)
             .then(

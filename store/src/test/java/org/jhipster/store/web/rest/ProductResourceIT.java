@@ -66,12 +66,7 @@ class ProductResourceIT {
      * if they test an entity which requires the current entity.
      */
     public static Product createEntity() {
-        Product product = new Product()
-            .title(DEFAULT_TITLE)
-            .price(DEFAULT_PRICE)
-            .image(DEFAULT_IMAGE)
-            .imageContentType(DEFAULT_IMAGE_CONTENT_TYPE);
-        return product;
+        return new Product().title(DEFAULT_TITLE).price(DEFAULT_PRICE).image(DEFAULT_IMAGE).imageContentType(DEFAULT_IMAGE_CONTENT_TYPE);
     }
 
     /**
@@ -81,12 +76,7 @@ class ProductResourceIT {
      * if they test an entity which requires the current entity.
      */
     public static Product createUpdatedEntity() {
-        Product product = new Product()
-            .title(UPDATED_TITLE)
-            .price(UPDATED_PRICE)
-            .image(UPDATED_IMAGE)
-            .imageContentType(UPDATED_IMAGE_CONTENT_TYPE);
-        return product;
+        return new Product().title(UPDATED_TITLE).price(UPDATED_PRICE).image(UPDATED_IMAGE).imageContentType(UPDATED_IMAGE_CONTENT_TYPE);
     }
 
     @BeforeEach
@@ -352,7 +342,7 @@ class ProductResourceIT {
         Product partialUpdatedProduct = new Product();
         partialUpdatedProduct.setId(product.getId());
 
-        partialUpdatedProduct.title(UPDATED_TITLE).price(UPDATED_PRICE);
+        partialUpdatedProduct.title(UPDATED_TITLE).image(UPDATED_IMAGE).imageContentType(UPDATED_IMAGE_CONTENT_TYPE);
 
         webTestClient
             .patch()

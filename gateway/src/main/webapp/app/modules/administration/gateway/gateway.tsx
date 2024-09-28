@@ -1,7 +1,7 @@
 import React, { useEffect } from 'react';
 import { Translate } from 'react-jhipster';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { Badge, Table, Button } from 'reactstrap';
+import { Badge, Button, Table } from 'reactstrap';
 
 import { useAppDispatch, useAppSelector } from 'app/config/store';
 import { getGatewayRoutes } from '../administration.reducer';
@@ -19,9 +19,9 @@ export const GatewayPage = () => {
     const spans = [];
     Object.keys(instance).map((key, index) => {
       spans.push(
-        <span key={key.toString() + 'value'}>
-          <Badge key={key.toString() + '-containerbadge'} className="fw-normal">
-            <Badge key={key.toString() + '-badge'} color="info" className="fw-normal" pill>
+        <span key={`${key.toString()}value`}>
+          <Badge key={`${key.toString()}-containerbadge`} className="fw-normal">
+            <Badge key={`${key.toString()}-badge`} color="info" className="fw-normal" pill>
               {key}
             </Badge>
             {instance[key]}
@@ -36,12 +36,10 @@ export const GatewayPage = () => {
     if (info) {
       if (info.checks && info.checks.filter(check => check.status === 'PASSING').length === info.checks.length) {
         return <Badge color="success">UP</Badge>;
-      } else {
-        return <Badge color="danger">DOWN</Badge>;
       }
-    } else {
-      return <Badge color="warning">?</Badge>;
+      return <Badge color="danger">DOWN</Badge>;
     }
+    return <Badge color="warning">?</Badge>;
   };
 
   const instanceInfo = route => {
@@ -50,7 +48,7 @@ export const GatewayPage = () => {
         <Table striped responsive>
           <tbody>
             {route.serviceInstances.map((instance, i) => (
-              <tr key={instance.instanceInfo + '-info'}>
+              <tr key={`${instance.instanceInfo}-info`}>
                 <td>
                   <a href={instance.uri} target="_blank" rel="noopener noreferrer">
                     {instance.uri}

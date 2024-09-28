@@ -1,6 +1,6 @@
 {
   "annotations": {
-    "changelogDate": "20240627195228"
+    "changelogDate": "20240927124518"
   },
   "applications": ["blog"],
   "clientRootFolder": "blog",
@@ -13,8 +13,7 @@
     },
     {
       "fieldName": "content",
-      "fieldType": "byte[]",
-      "fieldTypeBlobContent": "text",
+      "fieldType": "TextBlob",
       "fieldValidateRules": ["required"]
     },
     {

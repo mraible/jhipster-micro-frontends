@@ -1,5 +1,4 @@
 const ModuleFederationPlugin = require('webpack/lib/container/ModuleFederationPlugin');
-const { DefinePlugin } = require('webpack');
 
 const packageJson = require('../package.json');
 // Microfrontend api, should match across gateway and microservices.
@@ -15,7 +14,7 @@ const shareDependencies = ({ skipList = [] } = {}) =>
       .map(([dependency, version]) => [dependency, { ...sharedDefaults, version, requiredVersion: version }]),
   );
 
-module.exports = ({ serve }) => {
+module.exports = () => {
   return {
     optimization: {
       moduleIds: 'named',

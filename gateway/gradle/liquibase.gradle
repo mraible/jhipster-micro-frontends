@@ -22,6 +22,7 @@ liquibase {
       driver "org.postgresql.Driver"
       url "jdbc:postgresql://localhost:5432/gateway"
       username "gateway"
+      password "password"
       changelogFile "src/main/resources/config/liquibase/master.xml"
       logLevel "debug"
       classpath "src/main/resources/"
@@ -30,6 +31,7 @@ liquibase {
       driver "org.postgresql.Driver"
       url "jdbc:postgresql://localhost:5432/gateway"
       username "gateway"
+      password "password"
       changelogFile project.ext.diffChangelogFile
       logLevel "debug"
       classpath "$buildDir/classes/java/main"

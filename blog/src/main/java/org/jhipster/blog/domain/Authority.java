@@ -1,5 +1,7 @@
 package org.jhipster.blog.domain;
 
+import com.fasterxml.jackson.annotation.JsonIdentityInfo;
+import com.fasterxml.jackson.annotation.ObjectIdGenerators;
 import jakarta.validation.constraints.*;
 import java.io.Serializable;
 import java.util.Objects;
@@ -9,6 +11,7 @@ import org.springframework.data.neo4j.core.schema.Node;
 /**
  * A Authority.
  */
+@JsonIdentityInfo(generator = ObjectIdGenerators.PropertyGenerator.class, property = "name", scope = Authority.class)
 @Node("jhi_authority")
 @SuppressWarnings("common-java:DuplicatedBlocks")
 public class Authority implements Serializable {

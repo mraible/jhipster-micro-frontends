@@ -170,9 +170,9 @@ spec:
         - name: config
           image: busybox
           command:
-            - "sh"
+            - 'sh'
           args:
-            - "-c"
+            - '-c'
             - |
               set -e
               set -x
@@ -185,21 +185,21 @@ spec:
             - name: configdir
               mountPath: /data/configdb
         - name: install
-          image: "k8s.gcr.io/mongodb-install:0.6"
+          image: 'k8s.gcr.io/mongodb-install:0.6'
           args:
             - --work-dir=/work-dir
-          imagePullPolicy: "IfNotPresent"
+          imagePullPolicy: 'IfNotPresent'
           volumeMounts:
             - name: workdir
               mountPath: /work-dir
         - name: boot
-          image: mongo:7.0.6
+          image: mongo:8.0.0
           command:
             - /work-dir/peer-finder
           args:
             - -on-start=/init/on-start.sh
-            - "-service=store-mongodb"
-          imagePullPolicy: "IfNotPresent"
+            - '-service=store-mongodb'
+          imagePullPolicy: 'IfNotPresent'
           env:
             - name: POD_NAMESPACE
               valueFrom:
@@ -211,7 +211,7 @@ spec:
             - name: DATA_PATH
               value: /data/db
             - name: PORT
-              value: "27017"
+              value: '27017'
           volumeMounts:
             - name: workdir
               mountPath: /work-dir
@@ -223,8 +223,8 @@ spec:
               mountPath: /data/db
       containers:
         - name: mongodb
-          image: mongo:7.0.6
-          imagePullPolicy: "IfNotPresent"
+          image: mongo:8.0.0
+          imagePullPolicy: 'IfNotPresent'
           env:
             - name: POD_NAMESPACE
               valueFrom:
@@ -236,7 +236,7 @@ spec:
             - name: DATA_PATH
               value: /data/db
             - name: PORT
-              value: "27017"
+              value: '27017'
           ports:
             - name: peer
               containerPort: 27017
@@ -279,11 +279,11 @@ spec:
               mountPath: /work-dir
           resources:
             requests:
-              memory: "512Mi"
-              cpu: "500m"
+              memory: '512Mi'
+              cpu: '500m'
             limits:
-              memory: "1Gi"
-              cpu: "1"
+              memory: '1Gi'
+              cpu: '1'
       volumes:
         - name: config
           configMap:
@@ -300,10 +300,10 @@ spec:
     - metadata:
         name: datadir
       spec:
-        accessModes: ["ReadWriteOnce"]
+        accessModes: ['ReadWriteOnce']
         resources:
           requests:
-            storage: "1Gi"
+            storage: '1Gi'
 ---
 # Headless service for DNS record
 apiVersion: v1

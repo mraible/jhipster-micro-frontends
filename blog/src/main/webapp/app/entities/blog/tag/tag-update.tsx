@@ -1,17 +1,14 @@
-import React, { useState, useEffect } from 'react';
+import React, { useEffect } from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
-import { Button, Row, Col, FormText } from 'reactstrap';
-import { isNumber, Translate, translate, ValidatedField, ValidatedForm } from 'react-jhipster';
+import { Button, Col, Row } from 'reactstrap';
+import { Translate, ValidatedField, ValidatedForm, translate } from 'react-jhipster';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 
-import { convertDateTimeFromServer, convertDateTimeToServer, displayDefaultDateTime } from 'app/shared/util/date-utils';
 import { mapIdList } from 'app/shared/util/entity-utils';
 import { useAppDispatch, useAppSelector } from 'app/config/store';
 
-import { IPost } from 'app/shared/model/blog/post.model';
 import { getEntities as getPosts } from 'app/entities/blog/post/post.reducer';
-import { ITag } from 'app/shared/model/blog/tag.model';
-import { getEntity, updateEntity, createEntity, reset } from './tag.reducer';
+import { createEntity, getEntity, updateEntity } from './tag.reducer';
 
 export const TagUpdate = () => {
   const dispatch = useAppDispatch();
@@ -45,7 +42,6 @@ export const TagUpdate = () => {
     }
   }, [updateSuccess]);
 
-  // eslint-disable-next-line complexity
   const saveEntity = values => {
     const entity = {
       ...tagEntity,

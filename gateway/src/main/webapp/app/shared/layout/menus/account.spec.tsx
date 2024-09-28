@@ -2,7 +2,6 @@ import React from 'react';
 import { render } from '@testing-library/react';
 import { MemoryRouter } from 'react-router-dom';
 
-import { getLoginUrl } from 'app/shared/util/url-utils';
 import { AccountMenu } from './account';
 
 describe('AccountMenu', () => {

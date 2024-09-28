@@ -22,7 +22,7 @@
     "clientThemeVariant": "dark",
     "devServerPort": 9060,
     "entities": [],
-    "jhipsterVersion": "8.6.0",
+    "jhipsterVersion": "8.7.1",
     "languages": ["en"],
     "microfrontends": [
       {
@@ -34,7 +34,6 @@
     ],
     "monorepository": true,
     "nativeLanguage": "en",
-    "packageFolder": "org/jhipster/gateway",
     "packageName": "org.jhipster.gateway",
     "prodDatabaseType": "postgresql",
     "reactive": true,
