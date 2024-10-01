@@ -1,12 +1,11 @@
 application {
   config {
     baseName gateway
-    reactive true
     packageName org.jhipster.gateway
     applicationType gateway
     authenticationType oauth2
-    buildTool gradle
-    clientFramework react
+    buildTool maven
+    clientFramework vue
     clientTheme quartz
     clientThemeVariant dark
     prodDatabaseType postgresql
@@ -19,12 +18,11 @@ application {
 application {
   config {
     baseName blog
-    reactive true
     packageName org.jhipster.blog
     applicationType microservice
     authenticationType oauth2
-    buildTool gradle
-    clientFramework react
+    buildTool maven
+    clientFramework vue
     databaseType neo4j
     enableHibernateCache false
     serverPort 8081
@@ -37,12 +35,11 @@ application {
 application {
   config {
     baseName store
-    reactive true
     packageName org.jhipster.store
     applicationType microservice
     authenticationType oauth2
-    buildTool gradle
-    clientFramework react
+    buildTool maven
+    clientFramework vue
     databaseType mongodb
     enableHibernateCache false
     serverPort 8082

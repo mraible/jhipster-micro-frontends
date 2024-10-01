@@ -3,8 +3,8 @@
 import globals from 'globals';
 import prettier from 'eslint-plugin-prettier/recommended';
 import tseslint from 'typescript-eslint';
-import eslint from '@eslint/js';
-import react from 'eslint-plugin-react/configs/recommended.js';
+import js from '@eslint/js';
+import vue from 'eslint-plugin-vue';
 import cypress from 'eslint-plugin-cypress/flat';
 // jhipster-needle-eslint-add-import - JHipster will add additional import here
 
@@ -17,74 +17,44 @@ export default tseslint.config(
     },
   },
   { ignores: ['src/main/docker/'] },
-  { ignores: ['build/resources/main/static/', 'build/'] },
-  eslint.configs.recommended,
+  { ignores: ['target/classes/static/', 'target/'] },
+  js.configs.recommended,
+  ...tseslint.configs.recommended.map(config =>
+    config.name === 'typescript-eslint/base' ? config : { ...config, files: ['**/*.ts', '**/*.tsx', '**/*.mts', '**/*.cts'] },
+  ),
   {
     files: ['**/*.{js,cjs,mjs}'],
     rules: {
       'no-unused-vars': ['error', { argsIgnorePattern: '^_' }],
     },
   },
+  ...vue.configs['flat/recommended'],
   {
-    files: ['src/main/webapp/**/*.{ts,tsx}'],
-    extends: [...tseslint.configs.recommendedTypeChecked, react],
-    settings: {
-      react: {
-        version: 'detect',
-      },
-    },
+    files: ['**/*.vue'],
     languageOptions: {
-      globals: {
-        ...globals.browser,
-      },
-      parserOptions: {
-        project: ['./tsconfig.json', './tsconfig.test.json'],
-      },
+      parserOptions: { parser: '@typescript-eslint/parser' },
+      globals: { ...globals.browser },
+    },
+  },
+  {
+    files: ['src/main/webapp/**/*.vue', 'src/main/webapp/**/*.ts'],
+    languageOptions: {
+      globals: { ...globals.browser },
     },
     rules: {
-      '@typescript-eslint/member-ordering': [
-        'error',
-        {
-          default: ['static-field', 'instance-field', 'constructor', 'static-method', 'instance-method'],
-        },
-      ],
-      '@typescript-eslint/no-unused-vars': 'off',
-      '@typescript-eslint/explicit-member-accessibility': 'off',
-      '@typescript-eslint/explicit-function-return-type': 'off',
+      'no-console': process.env.NODE_ENV === 'production' ? 'warn' : 'off',
+      'no-debugger': process.env.NODE_ENV === 'production' ? 'warn' : 'off',
+      'vue/multi-word-component-names': 'off',
       '@typescript-eslint/no-explicit-any': 'off',
-      '@typescript-eslint/no-unsafe-argument': 'off',
-      '@typescript-eslint/no-unsafe-return': 'off',
-      '@typescript-eslint/no-unsafe-member-access': 'off',
-      '@typescript-eslint/no-unsafe-call': 'off',
-      '@typescript-eslint/no-unsafe-assignment': 'off',
+      '@typescript-eslint/no-unused-vars': 'off',
       '@typescript-eslint/explicit-module-boundary-types': 'off',
-      '@typescript-eslint/restrict-template-expressions': 'off',
-      '@typescript-eslint/restrict-plus-operands': 'off',
-      '@typescript-eslint/no-floating-promises': 'off',
-      '@typescript-eslint/interface-name-prefix': 'off',
       '@typescript-eslint/no-empty-function': 'off',
-      '@typescript-eslint/unbound-method': 'off',
-      '@typescript-eslint/array-type': 'off',
-      '@typescript-eslint/no-shadow': 'error',
-      'spaced-comment': ['warn', 'always'],
-      'guard-for-in': 'error',
-      'no-labels': 'error',
-      'no-caller': 'error',
-      'no-bitwise': 'error',
-      'no-console': ['error', { allow: ['warn', 'error'] }],
-      'no-new-wrappers': 'error',
-      'no-eval': 'error',
-      'no-new': 'error',
-      'no-var': 'error',
-      radix: 'error',
-      eqeqeq: ['error', 'always', { null: 'ignore' }],
-      'prefer-const': 'error',
-      'object-shorthand': ['error', 'always', { avoidExplicitReturnArrows: true }],
-      'default-case': 'error',
-      complexity: ['warn', 40],
-      'no-invalid-this': 'off',
-      'react/prop-types': 'off',
-      'react/display-name': 'off',
+      '@typescript-eslint/ban-ts-comment': 'off',
+      '@typescript-eslint/no-var-requires': 'off',
+      '@typescript-eslint/consistent-type-imports': 'error',
+      'vue/no-v-text-v-html-on-component': ['error', { allow: ['router-link', 'b-alert', 'b-badge', 'b-button', 'b-link'] }],
+      'vue/no-reserved-component-names': 'off',
+      'vue/attributes-order': 'off',
     },
   },
   {

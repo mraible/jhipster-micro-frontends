@@ -5,19 +5,19 @@
     "applications": {
       "blog": {
         "applicationIndex": 1,
-        "clientFramework": "react",
+        "clientFramework": "vue",
         "serverPort": "8081"
       },
       "store": {
         "applicationIndex": 2,
-        "clientFramework": "react",
+        "clientFramework": "vue",
         "serverPort": "8082"
       }
     },
     "authenticationType": "oauth2",
     "baseName": "gateway",
-    "buildTool": "gradle",
-    "clientFramework": "react",
+    "buildTool": "maven",
+    "clientFramework": "vue",
     "clientTheme": "quartz",
     "clientThemeVariant": "dark",
     "devServerPort": 9060,

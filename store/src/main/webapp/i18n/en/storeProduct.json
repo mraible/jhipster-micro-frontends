@@ -8,11 +8,11 @@
         "createOrEditLabel": "Create or edit a Product",
         "notFound": "No Products found"
       },
-      "created": "A new Product is created with identifier {{ param }}",
-      "updated": "A Product is updated with identifier {{ param }}",
-      "deleted": "A Product is deleted with identifier {{ param }}",
+      "created": "A new Product is created with identifier { param }",
+      "updated": "A Product is updated with identifier { param }",
+      "deleted": "A Product is deleted with identifier { param }",
       "delete": {
-        "question": "Are you sure you want to delete Product {{ id }}?"
+        "question": "Are you sure you want to delete Product { id }?"
       },
       "detail": {
         "title": "Product"
