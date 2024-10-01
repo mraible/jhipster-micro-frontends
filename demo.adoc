@@ -230,6 +230,10 @@ The gateway's `webpack.microfrontend.js` handles  specifying the shared dependen
 
 The blog's `webpack.microfrontend.js` looks similar, except that it exposes its `remoteEntry.js`, menu items, and routes.
 
+== Architecture as Code
+
+Each project has a `TestStructureTest.java` class that continuously tests the architecture with [ArchUnit](https://www.archunit.org/).
+
 == Build and run with Docker
 
 . Build Docker images for each application by running the following command from the root directory.
