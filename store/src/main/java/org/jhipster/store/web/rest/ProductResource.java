@@ -33,7 +33,7 @@ import tech.jhipster.web.util.reactive.ResponseUtil;
 @RequestMapping("/api/products")
 public class ProductResource {
 
-    private static final Logger log = LoggerFactory.getLogger(ProductResource.class);
+    private static final Logger LOG = LoggerFactory.getLogger(ProductResource.class);
 
     private static final String ENTITY_NAME = "storeProduct";
 
@@ -55,7 +55,7 @@ public class ProductResource {
      */
     @PostMapping("")
     public Mono<ResponseEntity<Product>> createProduct(@Valid @RequestBody Product product) throws URISyntaxException {
-        log.debug("REST request to save Product : {}", product);
+        LOG.debug("REST request to save Product : {}", product);
         if (product.getId() != null) {
             throw new BadRequestAlertException("A new product cannot already have an ID", ENTITY_NAME, "idexists");
         }
@@ -87,7 +87,7 @@ public class ProductResource {
         @PathVariable(value = "id", required = false) final String id,
         @Valid @RequestBody Product product
     ) throws URISyntaxException {
-        log.debug("REST request to update Product : {}, {}", id, product);
+        LOG.debug("REST request to update Product : {}, {}", id, product);
         if (product.getId() == null) {
             throw new BadRequestAlertException("Invalid id", ENTITY_NAME, "idnull");
         }
@@ -105,11 +105,10 @@ public class ProductResource {
                 return productRepository
                     .save(product)
                     .switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND)))
-                    .map(
-                        result ->
-                            ResponseEntity.ok()
-                                .headers(HeaderUtil.createEntityUpdateAlert(applicationName, true, ENTITY_NAME, result.getId()))
-                                .body(result)
+                    .map(result ->
+                        ResponseEntity.ok()
+                            .headers(HeaderUtil.createEntityUpdateAlert(applicationName, true, ENTITY_NAME, result.getId()))
+                            .body(result)
                     );
             });
     }
@@ -130,7 +129,7 @@ public class ProductResource {
         @PathVariable(value = "id", required = false) final String id,
         @NotNull @RequestBody Product product
     ) throws URISyntaxException {
-        log.debug("REST request to partial update Product partially : {}, {}", id, product);
+        LOG.debug("REST request to partial update Product partially : {}, {}", id, product);
         if (product.getId() == null) {
             throw new BadRequestAlertException("Invalid id", ENTITY_NAME, "idnull");
         }
@@ -167,11 +166,10 @@ public class ProductResource {
 
                 return result
                     .switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND)))
-                    .map(
-                        res ->
-                            ResponseEntity.ok()
-                                .headers(HeaderUtil.createEntityUpdateAlert(applicationName, true, ENTITY_NAME, res.getId()))
-                                .body(res)
+                    .map(res ->
+                        ResponseEntity.ok()
+                            .headers(HeaderUtil.createEntityUpdateAlert(applicationName, true, ENTITY_NAME, res.getId()))
+                            .body(res)
                     );
             });
     }
@@ -188,20 +186,19 @@ public class ProductResource {
         @org.springdoc.core.annotations.ParameterObject Pageable pageable,
         ServerHttpRequest request
     ) {
-        log.debug("REST request to get a page of Products");
+        LOG.debug("REST request to get a page of Products");
         return productRepository
             .count()
             .zipWith(productRepository.findAllBy(pageable).collectList())
-            .map(
-                countWithEntities ->
-                    ResponseEntity.ok()
-                        .headers(
-                            PaginationUtil.generatePaginationHttpHeaders(
-                                ForwardedHeaderUtils.adaptFromForwardedHeaders(request.getURI(), request.getHeaders()),
-                                new PageImpl<>(countWithEntities.getT2(), pageable, countWithEntities.getT1())
-                            )
+            .map(countWithEntities ->
+                ResponseEntity.ok()
+                    .headers(
+                        PaginationUtil.generatePaginationHttpHeaders(
+                            ForwardedHeaderUtils.adaptFromForwardedHeaders(request.getURI(), request.getHeaders()),
+                            new PageImpl<>(countWithEntities.getT2(), pageable, countWithEntities.getT1())
                         )
-                        .body(countWithEntities.getT2())
+                    )
+                    .body(countWithEntities.getT2())
             );
     }
 
@@ -213,7 +210,7 @@ public class ProductResource {
      */
     @GetMapping("/{id}")
     public Mono<ResponseEntity<Product>> getProduct(@PathVariable("id") String id) {
-        log.debug("REST request to get Product : {}", id);
+        LOG.debug("REST request to get Product : {}", id);
         Mono<Product> product = productRepository.findById(id);
         return ResponseUtil.wrapOrNotFound(product);
     }
@@ -226,7 +223,7 @@ public class ProductResource {
      */
     @DeleteMapping("/{id}")
     public Mono<ResponseEntity<Void>> deleteProduct(@PathVariable("id") String id) {
-        log.debug("REST request to delete Product : {}", id);
+        LOG.debug("REST request to delete Product : {}", id);
         return productRepository
             .deleteById(id)
             .then(

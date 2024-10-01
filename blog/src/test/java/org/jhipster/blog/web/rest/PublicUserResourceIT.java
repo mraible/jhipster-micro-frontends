@@ -24,8 +24,6 @@ import org.springframework.test.web.reactive.server.WebTestClient;
 @IntegrationTest
 class PublicUserResourceIT {
 
-    private static final String DEFAULT_LOGIN = "johndoe";
-
     @Autowired
     private UserRepository userRepository;
 

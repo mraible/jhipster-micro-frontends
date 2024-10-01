@@ -63,12 +63,14 @@ spring:
   r2dbc:
     url: r2dbc:postgresql://localhost:5432/gateway
     username: gateway
-    password:
+    password: password
   thymeleaf:
     cache: false
 
 server:
   port: 8080
+  # make sure requests the proxy uri instead of the server one
+  forward-headers-strategy: native
 
 # ===================================================================
 # JHipster specific properties

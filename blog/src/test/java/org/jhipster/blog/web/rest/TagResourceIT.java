@@ -55,8 +55,7 @@ class TagResourceIT {
      * if they test an entity which requires the current entity.
      */
     public static Tag createEntity() {
-        Tag tag = new Tag().name(DEFAULT_NAME);
-        return tag;
+        return new Tag().name(DEFAULT_NAME);
     }
 
     /**
@@ -66,8 +65,7 @@ class TagResourceIT {
      * if they test an entity which requires the current entity.
      */
     public static Tag createUpdatedEntity() {
-        Tag tag = new Tag().name(UPDATED_NAME);
-        return tag;
+        return new Tag().name(UPDATED_NAME);
     }
 
     @BeforeEach

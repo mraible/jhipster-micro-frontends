@@ -21,6 +21,8 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.ParameterizedTypeReference;
+import org.springframework.core.convert.converter.Converter;
+import org.springframework.security.authentication.AbstractAuthenticationToken;
 import org.springframework.security.config.annotation.method.configuration.EnableReactiveMethodSecurity;
 import org.springframework.security.config.web.server.SecurityWebFiltersOrder;
 import org.springframework.security.config.web.server.ServerHttpSecurity;
@@ -39,6 +41,7 @@ import org.springframework.security.oauth2.core.oidc.user.DefaultOidcUser;
 import org.springframework.security.oauth2.core.oidc.user.OidcUser;
 import org.springframework.security.oauth2.core.oidc.user.OidcUserAuthority;
 import org.springframework.security.oauth2.jwt.*;
+import org.springframework.security.oauth2.server.resource.authentication.ReactiveJwtAuthenticationConverter;
 import org.springframework.security.web.server.SecurityWebFilterChain;
 import org.springframework.security.web.server.csrf.CookieServerCsrfTokenRepository;
 import org.springframework.security.web.server.csrf.ServerCsrfTokenRequestAttributeHandler;
@@ -47,6 +50,7 @@ import org.springframework.security.web.server.header.XFrameOptionsServerHttpHea
 import org.springframework.security.web.server.util.matcher.NegatedServerWebExchangeMatcher;
 import org.springframework.security.web.server.util.matcher.OrServerWebExchangeMatcher;
 import org.springframework.web.reactive.function.client.WebClient;
+import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import tech.jhipster.config.JHipsterProperties;
 import tech.jhipster.web.filter.reactive.CookieCsrfFilter;
@@ -88,29 +92,26 @@ public class SecurityConfiguration {
                 csrf
                     .csrfTokenRepository(CookieServerCsrfTokenRepository.withHttpOnlyFalse())
                     // See https://stackoverflow.com/q/74447118/65681
-                    .csrfTokenRequestHandler(new ServerCsrfTokenRequestAttributeHandler()))
+                    .csrfTokenRequestHandler(new ServerCsrfTokenRequestAttributeHandler())
+            )
             // See https://github.com/spring-projects/spring-security/issues/5766
             .addFilterAt(new CookieCsrfFilter(), SecurityWebFiltersOrder.REACTOR_CONTEXT)
             .addFilterAfter(new SpaWebFilter(), SecurityWebFiltersOrder.HTTPS_REDIRECT)
-            .headers(
-                headers ->
-                    headers
-                        .contentSecurityPolicy(csp -> csp.policyDirectives(jHipsterProperties.getSecurity().getContentSecurityPolicy()))
-                        .frameOptions(frameOptions -> frameOptions.mode(Mode.DENY))
-                        .referrerPolicy(
-                            referrer ->
-                                referrer.policy(ReferrerPolicyServerHttpHeadersWriter.ReferrerPolicy.STRICT_ORIGIN_WHEN_CROSS_ORIGIN)
+            .headers(headers ->
+                headers
+                    .contentSecurityPolicy(csp -> csp.policyDirectives(jHipsterProperties.getSecurity().getContentSecurityPolicy()))
+                    .frameOptions(frameOptions -> frameOptions.mode(Mode.DENY))
+                    .referrerPolicy(referrer ->
+                        referrer.policy(ReferrerPolicyServerHttpHeadersWriter.ReferrerPolicy.STRICT_ORIGIN_WHEN_CROSS_ORIGIN)
+                    )
+                    .permissionsPolicy(permissions ->
+                        permissions.policy(
+                            "camera=(), fullscreen=(self), geolocation=(), gyroscope=(), magnetometer=(), microphone=(), midi=(), payment=(), sync-xhr=()"
                         )
-                        .permissionsPolicy(
-                            permissions ->
-                                permissions.policy(
-                                    "camera=(), fullscreen=(self), geolocation=(), gyroscope=(), magnetometer=(), microphone=(), midi=(), payment=(), sync-xhr=()"
-                                )
-                        )
+                    )
             )
-            .authorizeExchange(
-                authz ->
-                    // prettier-ignore
+            .authorizeExchange(authz ->
+                // prettier-ignore
                 authz
                     .pathMatchers("/").permitAll()
                     .pathMatchers("/*.*").permitAll()
@@ -135,7 +136,7 @@ public class SecurityConfiguration {
             )
             .oauth2Login(oauth2 -> oauth2.authorizationRequestResolver(authorizationRequestResolver(this.clientRegistrationRepository)))
             .oauth2Client(withDefaults())
-            .oauth2ResourceServer(oauth2 -> oauth2.jwt(withDefaults()));
+            .oauth2ResourceServer(oauth2 -> oauth2.jwt(jwt -> jwt.jwtAuthenticationConverter(jwtAuthenticationConverter())));
         return http.build();
     }
 
@@ -153,9 +154,23 @@ public class SecurityConfiguration {
 
     private Consumer<OAuth2AuthorizationRequest.Builder> authorizationRequestCustomizer() {
         return customizer ->
-            customizer.authorizationRequestUri(
-                uriBuilder -> uriBuilder.queryParam("audience", jHipsterProperties.getSecurity().getOauth2().getAudience()).build()
+            customizer.authorizationRequestUri(uriBuilder ->
+                uriBuilder.queryParam("audience", jHipsterProperties.getSecurity().getOauth2().getAudience()).build()
             );
+    }
+
+    Converter<Jwt, Mono<AbstractAuthenticationToken>> jwtAuthenticationConverter() {
+        ReactiveJwtAuthenticationConverter jwtAuthenticationConverter = new ReactiveJwtAuthenticationConverter();
+        jwtAuthenticationConverter.setJwtGrantedAuthoritiesConverter(
+            new Converter<Jwt, Flux<GrantedAuthority>>() {
+                @Override
+                public Flux<GrantedAuthority> convert(Jwt jwt) {
+                    return Flux.fromIterable(SecurityUtils.extractAuthorityFromClaims(jwt.getClaims()));
+                }
+            }
+        );
+        jwtAuthenticationConverter.setPrincipalClaimName(PREFERRED_USERNAME);
+        return jwtAuthenticationConverter;
     }
 
     /**
@@ -195,13 +210,12 @@ public class SecurityConfiguration {
         Mono<ClientRegistration> clientRegistration = registrations.findByRegistrationId("oidc");
 
         return clientRegistration
-            .map(
-                oidc ->
-                    createJwtDecoder(
-                        oidc.getProviderDetails().getIssuerUri(),
-                        oidc.getProviderDetails().getJwkSetUri(),
-                        oidc.getProviderDetails().getUserInfoEndpoint().getUri()
-                    )
+            .map(oidc ->
+                createJwtDecoder(
+                    oidc.getProviderDetails().getIssuerUri(),
+                    oidc.getProviderDetails().getJwkSetUri(),
+                    oidc.getProviderDetails().getUserInfoEndpoint().getUri()
+                )
             )
             .block();
     }
@@ -226,10 +240,7 @@ public class SecurityConfiguration {
                     return Mono.just(jwt);
                 }
                 // Get user info from `users` cache if present
-                return Optional.ofNullable(
-                    users.getIfPresent(jwt.getSubject())
-                )// Retrieve user info from OAuth provider if not already loaded
-                .orElseGet(() ->
+                return Optional.ofNullable(users.getIfPresent(jwt.getSubject())).orElseGet(() -> // Retrieve user info from OAuth provider if not already loaded
                     WebClient.create()
                         .get()
                         .uri(userInfoUri)
@@ -258,9 +269,11 @@ public class SecurityConfiguration {
                                     claims.putAll(userInfo);
                                 })
                                 .claims(claims -> claims.putAll(jwt.getClaims()))
-                                .build())
+                                .build()
+                        )
                         // Put user info into the `users` cache
-                        .doOnNext(newJwt -> users.put(jwt.getSubject(), Mono.just(newJwt))));
+                        .doOnNext(newJwt -> users.put(jwt.getSubject(), Mono.just(newJwt)))
+                );
             }
         };
     }

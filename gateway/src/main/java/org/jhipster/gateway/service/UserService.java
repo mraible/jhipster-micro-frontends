@@ -29,7 +29,7 @@ import reactor.core.publisher.Mono;
 @Service
 public class UserService {
 
-    private static final Logger log = LoggerFactory.getLogger(UserService.class);
+    private static final Logger LOG = LoggerFactory.getLogger(UserService.class);
 
     private final UserRepository userRepository;
 
@@ -64,7 +64,7 @@ public class UserService {
                 user.setImageUrl(imageUrl);
                 return saveUser(user);
             })
-            .doOnNext(user -> log.debug("Changed Information for User: {}", user))
+            .doOnNext(user -> LOG.debug("Changed Information for User: {}", user))
             .then();
     }
 
@@ -90,11 +90,10 @@ public class UserService {
                 } else {
                     persistedUser = userRepository.save(user);
                 }
-                return persistedUser.flatMap(
-                    savedUser ->
-                        Flux.fromIterable(user.getAuthorities())
-                            .flatMap(authority -> userRepository.saveUserAuthority(savedUser.getId(), authority.getName()))
-                            .then(Mono.just(savedUser))
+                return persistedUser.flatMap(savedUser ->
+                    Flux.fromIterable(user.getAuthorities())
+                        .flatMap(authority -> userRepository.saveUserAuthority(savedUser.getId(), authority.getName()))
+                        .then(Mono.just(savedUser))
                 );
             });
     }
@@ -146,7 +145,7 @@ public class UserService {
                     .toList();
                 return Flux.fromIterable(authoritiesToSave);
             })
-            .doOnNext(authority -> log.debug("Saving authority '{}' in local database", authority))
+            .doOnNext(authority -> LOG.debug("Saving authority '{}' in local database", authority))
             .flatMap(authorityRepository::save)
             .then(userRepository.findOneByLogin(user.getLogin()))
             .switchIfEmpty(saveUser(user, true))
@@ -161,12 +160,11 @@ public class UserService {
                         idpModifiedDate = Instant.ofEpochSecond((Integer) details.get("updated_at"));
                     }
                     if (idpModifiedDate.isAfter(dbModifiedDate)) {
-                        log.debug("Updating user '{}' in local database", user.getLogin());
+                        LOG.debug("Updating user '{}' in local database", user.getLogin());
                         return updateUser(user.getFirstName(), user.getLastName(), user.getEmail(), user.getLangKey(), user.getImageUrl());
                     }
-                    // no last updated info, blindly update
                 } else {
-                    log.debug("Updating user '{}' in local database", user.getLogin());
+                    LOG.debug("Updating user '{}' in local database", user.getLogin());
                     return updateUser(user.getFirstName(), user.getLastName(), user.getEmail(), user.getLangKey(), user.getImageUrl());
                 }
                 return Mono.empty();

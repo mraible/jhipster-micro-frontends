@@ -15,7 +15,7 @@ import org.testcontainers.utility.DockerImageName;
  */
 public class Neo4jTestContainer implements InitializingBean, DisposableBean {
 
-    private static final Logger log = LoggerFactory.getLogger(Neo4jTestContainer.class);
+    private static final Logger LOG = LoggerFactory.getLogger(Neo4jTestContainer.class);
     private static final Integer CONTAINER_STARTUP_TIMEOUT_MINUTES = 10;
     private Neo4jContainer neo4jContainer;
 
@@ -29,10 +29,10 @@ public class Neo4jTestContainer implements InitializingBean, DisposableBean {
     @Override
     public void afterPropertiesSet() {
         if (null == neo4jContainer) {
-            neo4jContainer = (Neo4jContainer) new Neo4jContainer(DockerImageName.parse("neo4j:5.20.0"))
+            neo4jContainer = (Neo4jContainer) new Neo4jContainer(DockerImageName.parse("neo4j:5.23.0"))
                 .withoutAuthentication()
                 .withStartupTimeout(Duration.of(CONTAINER_STARTUP_TIMEOUT_MINUTES, ChronoUnit.MINUTES))
-                .withLogConsumer(new Slf4jLogConsumer(log))
+                .withLogConsumer(new Slf4jLogConsumer(LOG))
                 .withReuse(true);
         }
         if (!neo4jContainer.isRunning()) {

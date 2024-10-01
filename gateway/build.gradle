@@ -7,8 +7,8 @@ plugins {
     alias(libs.plugins.spring.boot)
     id "jhipster.docker-conventions"
     id "jhipster.code-quality-conventions"
-    id "jhipster.node-gradle-conventions"
     id "org.liquibase.gradle"
+    id "jhipster.node-gradle-conventions"
     // jhipster-needle-gradle-plugins - JHipster will add additional gradle plugins here
 }
 
@@ -19,7 +19,7 @@ description = ""
 
 sourceCompatibility=17
 targetCompatibility=17
-assert System.properties["java.specification.version"] == "17" || "18" || "19" || "20" || "21" || "22"
+assert System.properties["java.specification.version"] == "17" || "21" || "22"
 
 ext {
     springProfiles = ""
@@ -163,6 +163,25 @@ dependencies {
     implementation "org.springframework.data:spring-data-commons"
     implementation "org.springframework.retry:spring-retry"
     testImplementation "org.springframework.security:spring-security-test"
+    implementation platform(libs.spring.cloud.dependencies)
+    implementation platform(libs.feign.reactor.bom)
+    implementation libs.commons.beanutils
+    implementation libs.jhipster.framework
+    implementation libs.springdoc.openapi.starter.webflux.api
+    implementation "org.springframework.boot:spring-boot-starter-data-r2dbc"
+    implementation "org.springframework.cloud:spring-cloud-starter-gateway"
+    implementation "com.fasterxml.jackson.module:jackson-module-jaxb-annotations"
+    implementation "com.playtika.reactivefeign:feign-reactor-cloud"
+    implementation "com.playtika.reactivefeign:feign-reactor-spring-configuration"
+    implementation "com.playtika.reactivefeign:feign-reactor-webclient"
+    implementation "com.zaxxer:HikariCP"
+    implementation "jakarta.persistence:jakarta.persistence-api"
+    testImplementation "org.testcontainers:jdbc"
+    testImplementation "org.testcontainers:junit-jupiter"
+    testImplementation "org.testcontainers:testcontainers"
+    annotationProcessor "org.glassfish.jaxb:jaxb-runtime"
+    developmentOnly "org.springframework.boot:spring-boot-docker-compose"
+    // jhipster-needle-gradle-dependency - JHipster will add additional dependencies here
     OperatingSystem os = org.gradle.nativeplatform.platform.internal.DefaultNativePlatform.getCurrentOperatingSystem();
     Architecture arch = org.gradle.nativeplatform.platform.internal.DefaultNativePlatform.getCurrentArchitecture();
     if (os.isMacOsX() && !arch.isAmd64()) {
@@ -172,24 +191,6 @@ dependencies {
             }
         }
     }
-    implementation libs.jhipster.framework
-    implementation platform(libs.spring.cloud.dependencies)
-    implementation libs.springdoc.openapi.starter.webflux.api
-    implementation "com.playtika.reactivefeign:feign-reactor-cloud"
-    implementation "com.playtika.reactivefeign:feign-reactor-spring-configuration"
-    implementation "com.playtika.reactivefeign:feign-reactor-webclient"
-    implementation platform(libs.feign.reactor.bom)
-    implementation "org.springframework.cloud:spring-cloud-starter-gateway"
-    implementation "org.springframework.boot:spring-boot-starter-data-r2dbc"
-    implementation "jakarta.persistence:jakarta.persistence-api"
-    implementation libs.commons.beanutils
-    implementation "com.fasterxml.jackson.module:jackson-module-jaxb-annotations"
-    implementation "com.zaxxer:HikariCP"
-    annotationProcessor "org.glassfish.jaxb:jaxb-runtime"
-    testImplementation "org.testcontainers:jdbc"
-    testImplementation "org.testcontainers:junit-jupiter"
-    testImplementation "org.testcontainers:testcontainers"
-    // jhipster-needle-gradle-dependency - JHipster will add additional dependencies here
 }
 
 task cleanResources(type: Delete) {

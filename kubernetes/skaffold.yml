@@ -13,6 +13,6 @@ build:
       jib: {}
   tagPolicy:
     envTemplate:
-      template: "{{.IMAGE_NAME}}:latest"
+      template: '{{.IMAGE_NAME}}:latest'
 deploy:
   kustomize: {}

@@ -1,13 +1,13 @@
 import {
-  entityTableSelector,
-  entityDetailsButtonSelector,
-  entityDetailsBackButtonSelector,
-  entityCreateButtonSelector,
-  entityCreateSaveButtonSelector,
-  entityCreateCancelButtonSelector,
-  entityEditButtonSelector,
-  entityDeleteButtonSelector,
   entityConfirmDeleteButtonSelector,
+  entityCreateButtonSelector,
+  entityCreateCancelButtonSelector,
+  entityCreateSaveButtonSelector,
+  entityDeleteButtonSelector,
+  entityDetailsBackButtonSelector,
+  entityDetailsButtonSelector,
+  entityEditButtonSelector,
+  entityTableSelector,
 } from '../../support/entity';
 
 describe('Product e2e test', () => {
@@ -15,7 +15,7 @@ describe('Product e2e test', () => {
   const productPageUrlPattern = new RegExp('/store/product(\\?.*)?$');
   const username = Cypress.env('E2E_USERNAME') ?? 'user';
   const password = Cypress.env('E2E_PASSWORD') ?? 'user';
-  const productSample = { title: 'bankbook', price: 5851.29 };
+  const productSample = { title: 'quintuple', price: 25166.69 };
 
   let product;
 
@@ -162,11 +162,11 @@ describe('Product e2e test', () => {
     });
 
     it('should create an instance of Product', () => {
-      cy.get(`[data-cy="title"]`).type('walnut musty');
-      cy.get(`[data-cy="title"]`).should('have.value', 'walnut musty');
+      cy.get(`[data-cy="title"]`).type('gaseous');
+      cy.get(`[data-cy="title"]`).should('have.value', 'gaseous');
 
-      cy.get(`[data-cy="price"]`).type('30132.21');
-      cy.get(`[data-cy="price"]`).should('have.value', '30132.21');
+      cy.get(`[data-cy="price"]`).type('20322.22');
+      cy.get(`[data-cy="price"]`).should('have.value', '20322.22');
 
       cy.setFieldImageAsBytesOfEntity('image', 'integration-test.png', 'image/png');
 

@@ -64,8 +64,7 @@ class BlogResourceIT {
      * if they test an entity which requires the current entity.
      */
     public static Blog createEntity() {
-        Blog blog = new Blog().name(DEFAULT_NAME).handle(DEFAULT_HANDLE);
-        return blog;
+        return new Blog().name(DEFAULT_NAME).handle(DEFAULT_HANDLE);
     }
 
     /**
@@ -75,8 +74,7 @@ class BlogResourceIT {
      * if they test an entity which requires the current entity.
      */
     public static Blog createUpdatedEntity() {
-        Blog blog = new Blog().name(UPDATED_NAME).handle(UPDATED_HANDLE);
-        return blog;
+        return new Blog().name(UPDATED_NAME).handle(UPDATED_HANDLE);
     }
 
     @BeforeEach
@@ -357,8 +355,6 @@ class BlogResourceIT {
         // Update the blog using partial update
         Blog partialUpdatedBlog = new Blog();
         partialUpdatedBlog.setId(blog.getId());
-
-        partialUpdatedBlog.handle(UPDATED_HANDLE);
 
         webTestClient
             .patch()

@@ -6,15 +6,14 @@ import { parseHeaderForLinks } from 'react-jhipster';
 
 import { EntityState } from 'app/shared/reducers/reducer.utils';
 import { IPost, defaultValue } from 'app/shared/model/blog/post.model';
-import reducer, { createEntity, deleteEntity, getEntities, getEntity, updateEntity, partialUpdateEntity, reset } from './post.reducer';
+import reducer, { createEntity, deleteEntity, getEntities, getEntity, partialUpdateEntity, reset, updateEntity } from './post.reducer';
 
 describe('Entities reducer tests', () => {
   function isEmpty(element): boolean {
     if (element instanceof Array) {
       return element.length === 0;
-    } else {
-      return Object.keys(element).length === 0;
     }
+    return Object.keys(element).length === 0;
   }
 
   const initialState: EntityState<IPost> = {

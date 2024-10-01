@@ -121,8 +121,8 @@ spec:
         fsGroup: 1001
       containers:
         - name: consul
-          image: docker.io/bitnami/consul:1.19.0
-          imagePullPolicy: "IfNotPresent"
+          image: docker.io/bitnami/consul:1.19.2
+          imagePullPolicy: 'IfNotPresent'
           securityContext:
             allowPrivilegeEscalation: false
             runAsNonRoot: true
@@ -133,51 +133,51 @@ spec:
             - name: rpc
               containerPort: 8400
             - name: serflan-tcp
-              protocol: "TCP"
+              protocol: 'TCP'
               containerPort: 8301
             - name: serflan-udp
               containerPort: 8301
-              protocol: "UDP"
+              protocol: 'UDP'
             - name: rpc-server
               containerPort: 8300
             - name: dns-tcp
               containerPort: 8600
             - name: dns-udp
               containerPort: 8600
-              protocol: "UDP"
+              protocol: 'UDP'
           resources:
             requests:
-              cpu: "100m"
-              memory: "512Mi"
+              cpu: '100m'
+              memory: '512Mi'
           env:
             - name: BITNAMI_DEBUG
-              value: "false"
+              value: 'false'
             - name: CONSUL_NODE_NAME
               valueFrom:
                 fieldRef:
                   fieldPath: metadata.name
             - name: CONSUL_RETRY_JOIN
-              value: "consul-headless.demo.svc.cluster.local"
+              value: 'consul-headless.demo.svc.cluster.local'
             - name: CONSUL_DISABLE_KEYRING_FILE
-              value: "true"
+              value: 'true'
             - name: CONSUL_BOOTSTRAP_EXPECT
-              value: "3"
+              value: '3'
             - name: CONSUL_RAFT_MULTIPLIER
-              value: "1"
+              value: '1'
             - name: CONSUL_DOMAIN
-              value: "consul"
+              value: 'consul'
             - name: CONSUL_DATACENTER
-              value: "dc1"
+              value: 'dc1'
             - name: CONSUL_UI
-              value: "true"
+              value: 'true'
             - name: CONSUL_HTTP_PORT_NUMBER
-              value: "8500"
+              value: '8500'
             - name: CONSUL_DNS_PORT_NUMBER
-              value: "8600"
+              value: '8600'
             - name: CONSUL_RPC_PORT_NUMBER
-              value: "8400"
+              value: '8400'
             - name: CONSUL_SERF_LAN_PORT_NUMBER
-              value: "8301"
+              value: '8301'
           envFrom:
           livenessProbe:
             exec:
@@ -216,7 +216,7 @@ spec:
         name: data
       spec:
         accessModes:
-          - "ReadWriteOnce"
+          - 'ReadWriteOnce'
         resources:
           requests:
-            storage: "8Gi"
+            storage: '8Gi'

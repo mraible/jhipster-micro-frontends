@@ -60,5 +60,7 @@ public class ProductAsserts {
      * @param expected the expected entity
      * @param actual the actual entity
      */
-    public static void assertProductUpdatableRelationshipsEquals(Product expected, Product actual) {}
+    public static void assertProductUpdatableRelationshipsEquals(Product expected, Product actual) {
+        // empty method
+    }
 }

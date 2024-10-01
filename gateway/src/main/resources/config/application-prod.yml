@@ -50,7 +50,7 @@ spring:
   r2dbc:
     url: r2dbc:postgresql://localhost:5432/gateway
     username: gateway
-    password:
+    password: password
   thymeleaf:
     cache: true
 

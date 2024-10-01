@@ -19,7 +19,7 @@ metadata:
     app: blog-neo4j
 type: Opaque
 data:
-  neo4j-password: ZGU3NTc5MDAxYTNjYzZkYWMzN2UyZTY5MGY4M2NjMjliMWFjNjRjZmFhYmZjMDFmZmFlMzA2OTQ2MzQz
+  neo4j-password: ZGFkZjkyYTgzZmU1ZmE1YTA4MzQ5ZmQ2NGFhODI5OGE5ZDVmNWQxMTY2OGJiNzc5NGVkZjQ5MzNhZjE4
 ---
 apiVersion: apps/v1
 kind: StatefulSet
@@ -43,10 +43,10 @@ spec:
             claimName: blog-neo4j-pvc
       containers:
         - name: neo4j
-          image: neo4j:5.20.0
+          image: neo4j:5.23.0
           env:
             - name: NEO4J_AUTH
-              value: "none"
+              value: 'none'
           ports:
             - containerPort: 7474
             - containerPort: 7687
@@ -55,11 +55,11 @@ spec:
               mountPath: /var/lib/neo4j/data
           resources:
             requests:
-              memory: "512Mi"
-              cpu: "500m"
+              memory: '512Mi'
+              cpu: '500m'
             limits:
-              memory: "1Gi"
-              cpu: "1"
+              memory: '1Gi'
+              cpu: '1'
 ---
 apiVersion: v1
 kind: Service

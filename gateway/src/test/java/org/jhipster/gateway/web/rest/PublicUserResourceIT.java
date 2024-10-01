@@ -5,7 +5,6 @@ import static org.springframework.security.test.web.reactive.server.SecurityMock
 import java.util.Set;
 import org.jhipster.gateway.IntegrationTest;
 import org.jhipster.gateway.domain.User;
-import org.jhipster.gateway.repository.EntityManager;
 import org.jhipster.gateway.repository.UserRepository;
 import org.jhipster.gateway.security.AuthoritiesConstants;
 import org.junit.jupiter.api.AfterEach;
@@ -25,13 +24,8 @@ import org.springframework.test.web.reactive.server.WebTestClient;
 @IntegrationTest
 class PublicUserResourceIT {
 
-    private static final String DEFAULT_LOGIN = "johndoe";
-
     @Autowired
     private UserRepository userRepository;
-
-    @Autowired
-    private EntityManager em;
 
     @Autowired
     private WebTestClient webTestClient;
@@ -45,7 +39,7 @@ class PublicUserResourceIT {
 
     @BeforeEach
     public void initTest() {
-        user = UserResourceIT.initTestUser(em);
+        user = UserResourceIT.initTestUser();
     }
 
     @AfterEach

@@ -18,7 +18,7 @@ description = ""
 
 sourceCompatibility=17
 targetCompatibility=17
-assert System.properties["java.specification.version"] == "17" || "18" || "19" || "20" || "21" || "22"
+assert System.properties["java.specification.version"] == "17" || "21" || "22"
 
 ext {
     springProfiles = ""
@@ -161,6 +161,24 @@ dependencies {
     implementation "org.springframework.data:spring-data-commons"
     implementation "org.springframework.retry:spring-retry"
     testImplementation "org.springframework.security:spring-security-test"
+    implementation platform(libs.spring.cloud.dependencies)
+    implementation platform(libs.feign.reactor.bom)
+    implementation platform(libs.mongock.bom)
+    implementation libs.jhipster.framework
+    implementation libs.springdoc.openapi.starter.webflux.api
+    implementation "org.springframework.boot:spring-boot-starter-data-mongodb"
+    implementation "org.springframework.boot:spring-boot-starter-data-mongodb-reactive"
+    implementation "com.playtika.reactivefeign:feign-reactor-cloud"
+    implementation "com.playtika.reactivefeign:feign-reactor-spring-configuration"
+    implementation "com.playtika.reactivefeign:feign-reactor-webclient"
+    implementation "io.mongock:mongock-springboot-v3"
+    implementation "io.mongock:mongodb-reactive-driver"
+    implementation "io.mongock:mongodb-springdata-v4-driver"
+    testImplementation "org.testcontainers:junit-jupiter"
+    testImplementation "org.testcontainers:mongodb"
+    testImplementation "org.testcontainers:testcontainers"
+    developmentOnly "org.springframework.boot:spring-boot-docker-compose"
+    // jhipster-needle-gradle-dependency - JHipster will add additional dependencies here
     OperatingSystem os = org.gradle.nativeplatform.platform.internal.DefaultNativePlatform.getCurrentOperatingSystem();
     Architecture arch = org.gradle.nativeplatform.platform.internal.DefaultNativePlatform.getCurrentArchitecture();
     if (os.isMacOsX() && !arch.isAmd64()) {
@@ -170,23 +188,6 @@ dependencies {
             }
         }
     }
-    implementation libs.jhipster.framework
-    implementation platform(libs.spring.cloud.dependencies)
-    implementation libs.springdoc.openapi.starter.webflux.api
-    implementation "com.playtika.reactivefeign:feign-reactor-cloud"
-    implementation "com.playtika.reactivefeign:feign-reactor-spring-configuration"
-    implementation "com.playtika.reactivefeign:feign-reactor-webclient"
-    implementation platform(libs.feign.reactor.bom)
-    implementation "org.springframework.boot:spring-boot-starter-data-mongodb-reactive"
-    implementation "io.mongock:mongock-springboot-v3"
-    implementation "io.mongock:mongodb-reactive-driver"
-    testImplementation "org.testcontainers:junit-jupiter"
-    testImplementation "org.testcontainers:mongodb"
-    testImplementation "org.testcontainers:testcontainers"
-    implementation platform(libs.mongock.bom)
-    implementation "org.springframework.boot:spring-boot-starter-data-mongodb"
-    implementation "io.mongock:mongodb-springdata-v4-driver"
-    // jhipster-needle-gradle-dependency - JHipster will add additional dependencies here
 }
 
 task cleanResources(type: Delete) {

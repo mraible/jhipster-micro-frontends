@@ -13,12 +13,12 @@ services:
       - SPRING_SECURITY_OAUTH2_CLIENT_REGISTRATION_OIDC_CLIENT_ID=web_app
       - SPRING_SECURITY_OAUTH2_CLIENT_REGISTRATION_OIDC_CLIENT_SECRET=web_app
     ports:
-      - "8080:8080"
+      - 8080:8080
     healthcheck:
       test:
         - CMD
         - curl
-        - "-f"
+        - -f
         - http://localhost:8080/management/health
       interval: 5s
       timeout: 5s
@@ -29,10 +29,10 @@ services:
       keycloak:
         condition: service_healthy
   gateway-postgresql:
-    image: postgres:16.3
+    image: postgres:16.4
     environment:
       - POSTGRES_USER=gateway
-      - POSTGRES_PASSWORD=
+      - POSTGRES_PASSWORD=password
       - POSTGRES_HOST_AUTH_METHOD=trust
     healthcheck:
       test:
@@ -58,7 +58,7 @@ services:
       test:
         - CMD
         - curl
-        - "-f"
+        - -f
         - http://localhost:8081/management/health
       interval: 5s
       timeout: 5s
@@ -69,7 +69,7 @@ services:
       keycloak:
         condition: service_healthy
   blog-neo4j:
-    image: neo4j:5.20.0
+    image: neo4j:5.23.0
     environment:
       - NEO4J_AUTH=none
     healthcheck:
@@ -77,8 +77,8 @@ services:
         - CMD
         - wget
         - http://localhost:7474/
-        - "-O"
-        - "-"
+        - -O
+        - '-'
       interval: 5s
       timeout: 5s
       retries: 10
@@ -99,7 +99,7 @@ services:
       test:
         - CMD
         - curl
-        - "-f"
+        - -f
         - http://localhost:8082/management/health
       interval: 5s
       timeout: 5s
@@ -110,22 +110,22 @@ services:
       keycloak:
         condition: service_healthy
   store-mongodb:
-    image: mongo:7.0.6
+    image: mongo:8.0.0
     healthcheck:
       test:
         - CMD
         - echo
         - '''db.runCommand("ping").ok'''
-        - "|"
+        - '|'
         - mongo
         - localhost:27017/test
-        - "--quiet"
+        - --quiet
       interval: 5s
       timeout: 5s
       retries: 10
 
   consul:
-    image: docker.io/bitnami/consul:1.19.0
+    image: docker.io/bitnami/consul:1.19.2
     ports:
       - 8300:8300
       - 8500:8500
@@ -141,7 +141,7 @@ services:
       - CONSUL_PORT=8500
   keycloak:
     image: quay.io/keycloak/keycloak:25.0.1
-    command: "start-dev --import-realm"
+    command: 'start-dev --import-realm'
     volumes:
       - ./realm-config:/opt/keycloak/data/import
       - ./realm-config/keycloak-health-check.sh:/opt/keycloak/health-check.sh
@@ -158,7 +158,7 @@ services:
       - 9080:9080
       - 9443:9443
     healthcheck:
-      test: "bash /opt/keycloak/health-check.sh"
+      test: 'bash /opt/keycloak/health-check.sh'
       interval: 5s
       timeout: 5s
       retries: 20

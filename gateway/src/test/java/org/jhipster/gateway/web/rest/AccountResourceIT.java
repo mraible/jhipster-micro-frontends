@@ -90,15 +90,7 @@ class AccountResourceIT {
     @Test
     @WithUnauthenticatedMockUser
     void testNonAuthenticatedUser() {
-        webTestClient
-            .get()
-            .uri("/api/authenticate")
-            .accept(MediaType.APPLICATION_JSON)
-            .exchange()
-            .expectStatus()
-            .isOk()
-            .expectBody()
-            .isEmpty();
+        webTestClient.get().uri("/api/authenticate").accept(MediaType.TEXT_PLAIN).exchange().expectStatus().isOk().expectBody().isEmpty();
     }
 
     @Test
@@ -107,7 +99,7 @@ class AccountResourceIT {
         webTestClient
             .get()
             .uri("/api/authenticate")
-            .accept(MediaType.APPLICATION_JSON)
+            .accept(MediaType.TEXT_PLAIN)
             .exchange()
             .expectStatus()
             .isOk()

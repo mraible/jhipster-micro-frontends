@@ -1,7 +1,7 @@
 import React, { Suspense } from 'react';
 import { translate } from 'react-jhipster';
-import { NavDropdown } from './menu-components';
 import { importRemote } from '@module-federation/utilities';
+import { NavDropdown } from './menu-components';
 
 const EntitiesMenuItems = React.lazy(() => import('app/entities/menu').catch(() => import('app/shared/error/error-loading')));
 

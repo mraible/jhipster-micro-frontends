@@ -2,7 +2,7 @@
 name: blog
 services:
   neo4j:
-    image: neo4j:5.20.0
+    image: neo4j:5.23.0
     # volumes:
     #   - ~/volumes/jhipster/blog/neo4j/:/data
     environment:

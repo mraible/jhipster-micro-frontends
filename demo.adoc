@@ -169,17 +169,7 @@ jhipster jdl reactive-mf.jdl --monorepository --workspaces
 
 === Run your reactive Spring Boot microservices
 
-. When the process is complete, cd into the `gateway` directory and start Consul, Keycloak, and PostgreSQL using Docker Compose.
-+
-[source,shell]
-----
-cd gateway
-docker compose -f src/main/docker/consul.yml up -d
-docker compose -f src/main/docker/keycloak.yml up -d
-docker compose -f src/main/docker/postgresql.yml up -d
-----
-
-. Run `./gradlew` (or `npm run app:start` if you prefer npm commands).
+. When the process is complete, cd into the `gateway` directory and run `./gradlew` (or `npm run app:start` if you prefer npm commands).
 
 . Open the root directory in IntelliJ IDEA and view each project's code structure.
 
@@ -187,11 +177,10 @@ docker compose -f src/main/docker/postgresql.yml up -d
 
 . Show missing links in entities menu.
 
-. Start the `blog` by opening a terminal and navigating to its directory. Then, start its database with Docker and the app with Gradle.
+. Start the `blog` by opening a terminal and navigating to its directory. Then, start the app with Gradle.
 +
 [source,shell]
 ----
-npm run docker:db:up
 ./gradlew
 ----
 
@@ -237,9 +226,13 @@ NOTE: The backend has quick turnaround abilities too, thanks to https://docs.spr
 
 When you're learning concepts like micro frontends, it's often helpful to look at the code that makes things work.
 
-The gateway's `webpack.microfrontend.js` handles  specifying the shared dependencies and components between apps. The `src/main/webapp/app/shared/layout/menus/entities.tsx` file contains the menu items for each micro frontend.
+The gateway's `webpack.microfrontend.js` handles specifying the shared dependencies and components between apps. The `src/main/webapp/app/shared/layout/menus/entities.tsx` file contains the menu items for each micro frontend.
 
 The blog's `webpack.microfrontend.js` looks similar, except that it exposes its `remoteEntry.js`, menu items, and routes.
+
+== Architecture as Code
+
+Each project has a `TestStructureTest.java` class that continuously tests the architecture with [ArchUnit](https://www.archunit.org/).
 
 == Build and run with Docker
 
@@ -247,10 +240,18 @@ The blog's `webpack.microfrontend.js` looks similar, except that it exposes its 
 +
 [source,shell]
 ----
-npm run java:docker
+npm run java:docker:arm64
 ----
 +
-TIP: For Apple Silicon, use `npm run java:docker:arm64`.
+[TIP]
+====
+If you're not using Apple Silicon, drop the `:arm64`:
+
+[source,shell]
+----
+npm run java:docker
+----
+====
 
 . Navigate to the `docker-compose` directory, stop the existing containers, then start all the containers.
 +

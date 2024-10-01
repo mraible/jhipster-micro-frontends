@@ -63,8 +63,7 @@ class PostResourceIT {
      * if they test an entity which requires the current entity.
      */
     public static Post createEntity() {
-        Post post = new Post().title(DEFAULT_TITLE).content(DEFAULT_CONTENT).date(DEFAULT_DATE);
-        return post;
+        return new Post().title(DEFAULT_TITLE).content(DEFAULT_CONTENT).date(DEFAULT_DATE);
     }
 
     /**
@@ -74,8 +73,7 @@ class PostResourceIT {
      * if they test an entity which requires the current entity.
      */
     public static Post createUpdatedEntity() {
-        Post post = new Post().title(UPDATED_TITLE).content(UPDATED_CONTENT).date(UPDATED_DATE);
-        return post;
+        return new Post().title(UPDATED_TITLE).content(UPDATED_CONTENT).date(UPDATED_DATE);
     }
 
     @BeforeEach
@@ -332,8 +330,6 @@ class PostResourceIT {
         // Update the post using partial update
         Post partialUpdatedPost = new Post();
         partialUpdatedPost.setId(post.getId());
-
-        partialUpdatedPost.content(UPDATED_CONTENT);
 
         webTestClient
             .patch()

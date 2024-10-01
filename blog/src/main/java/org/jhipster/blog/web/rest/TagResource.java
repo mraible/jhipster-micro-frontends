@@ -33,7 +33,7 @@ import tech.jhipster.web.util.reactive.ResponseUtil;
 @RequestMapping("/api/tags")
 public class TagResource {
 
-    private static final Logger log = LoggerFactory.getLogger(TagResource.class);
+    private static final Logger LOG = LoggerFactory.getLogger(TagResource.class);
 
     private static final String ENTITY_NAME = "blogTag";
 
@@ -55,7 +55,7 @@ public class TagResource {
      */
     @PostMapping("")
     public Mono<ResponseEntity<Tag>> createTag(@Valid @RequestBody Tag tag) throws URISyntaxException {
-        log.debug("REST request to save Tag : {}", tag);
+        LOG.debug("REST request to save Tag : {}", tag);
         if (tag.getId() != null) {
             throw new BadRequestAlertException("A new tag cannot already have an ID", ENTITY_NAME, "idexists");
         }
@@ -85,7 +85,7 @@ public class TagResource {
     @PutMapping("/{id}")
     public Mono<ResponseEntity<Tag>> updateTag(@PathVariable(value = "id", required = false) final String id, @Valid @RequestBody Tag tag)
         throws URISyntaxException {
-        log.debug("REST request to update Tag : {}, {}", id, tag);
+        LOG.debug("REST request to update Tag : {}, {}", id, tag);
         if (tag.getId() == null) {
             throw new BadRequestAlertException("Invalid id", ENTITY_NAME, "idnull");
         }
@@ -103,11 +103,10 @@ public class TagResource {
                 return tagRepository
                     .save(tag)
                     .switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND)))
-                    .map(
-                        result ->
-                            ResponseEntity.ok()
-                                .headers(HeaderUtil.createEntityUpdateAlert(applicationName, true, ENTITY_NAME, result.getId()))
-                                .body(result)
+                    .map(result ->
+                        ResponseEntity.ok()
+                            .headers(HeaderUtil.createEntityUpdateAlert(applicationName, true, ENTITY_NAME, result.getId()))
+                            .body(result)
                     );
             });
     }
@@ -128,7 +127,7 @@ public class TagResource {
         @PathVariable(value = "id", required = false) final String id,
         @NotNull @RequestBody Tag tag
     ) throws URISyntaxException {
-        log.debug("REST request to partial update Tag partially : {}, {}", id, tag);
+        LOG.debug("REST request to partial update Tag partially : {}, {}", id, tag);
         if (tag.getId() == null) {
             throw new BadRequestAlertException("Invalid id", ENTITY_NAME, "idnull");
         }
@@ -156,11 +155,10 @@ public class TagResource {
 
                 return result
                     .switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND)))
-                    .map(
-                        res ->
-                            ResponseEntity.ok()
-                                .headers(HeaderUtil.createEntityUpdateAlert(applicationName, true, ENTITY_NAME, res.getId()))
-                                .body(res)
+                    .map(res ->
+                        ResponseEntity.ok()
+                            .headers(HeaderUtil.createEntityUpdateAlert(applicationName, true, ENTITY_NAME, res.getId()))
+                            .body(res)
                     );
             });
     }
@@ -177,20 +175,19 @@ public class TagResource {
         @org.springdoc.core.annotations.ParameterObject Pageable pageable,
         ServerHttpRequest request
     ) {
-        log.debug("REST request to get a page of Tags");
+        LOG.debug("REST request to get a page of Tags");
         return tagRepository
             .count()
             .zipWith(tagRepository.findAllBy(pageable).collectList())
-            .map(
-                countWithEntities ->
-                    ResponseEntity.ok()
-                        .headers(
-                            PaginationUtil.generatePaginationHttpHeaders(
-                                ForwardedHeaderUtils.adaptFromForwardedHeaders(request.getURI(), request.getHeaders()),
-                                new PageImpl<>(countWithEntities.getT2(), pageable, countWithEntities.getT1())
-                            )
+            .map(countWithEntities ->
+                ResponseEntity.ok()
+                    .headers(
+                        PaginationUtil.generatePaginationHttpHeaders(
+                            ForwardedHeaderUtils.adaptFromForwardedHeaders(request.getURI(), request.getHeaders()),
+                            new PageImpl<>(countWithEntities.getT2(), pageable, countWithEntities.getT1())
                         )
-                        .body(countWithEntities.getT2())
+                    )
+                    .body(countWithEntities.getT2())
             );
     }
 
@@ -202,7 +199,7 @@ public class TagResource {
      */
     @GetMapping("/{id}")
     public Mono<ResponseEntity<Tag>> getTag(@PathVariable("id") String id) {
-        log.debug("REST request to get Tag : {}", id);
+        LOG.debug("REST request to get Tag : {}", id);
         Mono<Tag> tag = tagRepository.findById(id);
         return ResponseUtil.wrapOrNotFound(tag);
     }
@@ -215,7 +212,7 @@ public class TagResource {
      */
     @DeleteMapping("/{id}")
     public Mono<ResponseEntity<Void>> deleteTag(@PathVariable("id") String id) {
-        log.debug("REST request to delete Tag : {}", id);
+        LOG.debug("REST request to delete Tag : {}", id);
         return tagRepository
             .deleteById(id)
             .then(
