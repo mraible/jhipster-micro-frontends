@@ -232,7 +232,7 @@ The blog's `webpack.microfrontend.js` looks similar, except that it exposes its 
 
 == Architecture as Code
 
-Each project has a `TestStructureTest.java` class that continuously tests the architecture with [ArchUnit](https://www.archunit.org/).
+Each project has a `TestStructureTest.java` class that continuously tests the architecture with https://www.archunit.org/[ArchUnit].
 
 == Build and run with Docker
 
