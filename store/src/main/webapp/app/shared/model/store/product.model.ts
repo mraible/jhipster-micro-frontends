@@ -6,4 +6,12 @@ export interface IProduct {
   image?: string | null;
 }
 
-export const defaultValue: Readonly<IProduct> = {};
+export class Product implements IProduct {
+  constructor(
+    public id?: string,
+    public title?: string,
+    public price?: number,
+    public imageContentType?: string | null,
+    public image?: string | null,
+  ) {}
+}

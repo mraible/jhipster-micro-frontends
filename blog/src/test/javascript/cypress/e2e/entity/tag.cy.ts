@@ -15,7 +15,7 @@ describe('Tag e2e test', () => {
   const tagPageUrlPattern = new RegExp('/blog/tag(\\?.*)?$');
   const username = Cypress.env('E2E_USERNAME') ?? 'user';
   const password = Cypress.env('E2E_PASSWORD') ?? 'user';
-  const tagSample = { name: 'unique modulo' };
+  const tagSample = { name: 'explode' };
 
   let tag;
 
@@ -136,9 +136,7 @@ describe('Tag e2e test', () => {
       });
 
       it('last delete button click should delete instance of Tag', () => {
-        cy.intercept('GET', '/services/blog/api/tags/*').as('dialogDeleteRequest');
         cy.get(entityDeleteButtonSelector).last().click();
-        cy.wait('@dialogDeleteRequest');
         cy.getEntityDeleteDialogHeading('tag').should('exist');
         cy.get(entityConfirmDeleteButtonSelector).click();
         cy.wait('@deleteEntityRequest').then(({ response }) => {
@@ -162,8 +160,8 @@ describe('Tag e2e test', () => {
     });
 
     it('should create an instance of Tag', () => {
-      cy.get(`[data-cy="name"]`).type('over hundred');
-      cy.get(`[data-cy="name"]`).should('have.value', 'over hundred');
+      cy.get(`[data-cy="name"]`).type('somber silky');
+      cy.get(`[data-cy="name"]`).should('have.value', 'somber silky');
 
       cy.get(entityCreateSaveButtonSelector).click();
 

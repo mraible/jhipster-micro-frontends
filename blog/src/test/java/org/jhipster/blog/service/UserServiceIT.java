@@ -6,6 +6,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Objects;
 import org.jhipster.blog.IntegrationTest;
 import org.jhipster.blog.config.Constants;
 import org.jhipster.blog.domain.User;
@@ -16,6 +17,8 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cache.Cache;
+import org.springframework.cache.CacheManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
@@ -36,6 +39,9 @@ class UserServiceIT {
     private static final String DEFAULT_FIRSTNAME = "john";
 
     private static final String DEFAULT_LASTNAME = "doe";
+
+    @Autowired
+    private CacheManager cacheManager;
 
     private static final String DEFAULT_IMAGEURL = "http://placehold.it/50x50";
 
@@ -72,13 +78,19 @@ class UserServiceIT {
 
     @AfterEach
     public void cleanupAndCheck() {
-        userRepository.deleteAll().block();
+        cacheManager
+            .getCacheNames()
+            .stream()
+            .map(cacheName -> this.cacheManager.getCache(cacheName))
+            .filter(Objects::nonNull)
+            .forEach(Cache::clear);
+        userRepository.deleteAll();
     }
 
     @Test
     void testDefaultUserDetails() {
         OAuth2AuthenticationToken authentication = createMockOAuth2AuthenticationToken(userDetails);
-        AdminUserDTO userDTO = userService.getUserFromAuthentication(authentication).block();
+        AdminUserDTO userDTO = userService.getUserFromAuthentication(authentication);
 
         assertThat(userDTO.getLogin()).isEqualTo(DEFAULT_LOGIN);
         assertThat(userDTO.getFirstName()).isEqualTo(DEFAULT_FIRSTNAME);
@@ -95,7 +107,7 @@ class UserServiceIT {
         userDetails.put("preferred_username", "TEST");
 
         OAuth2AuthenticationToken authentication = createMockOAuth2AuthenticationToken(userDetails);
-        AdminUserDTO userDTO = userService.getUserFromAuthentication(authentication).block();
+        AdminUserDTO userDTO = userService.getUserFromAuthentication(authentication);
 
         assertThat(userDTO.getLogin()).isEqualTo("test");
     }
@@ -106,7 +118,7 @@ class UserServiceIT {
         userDetails.put("locale", "en-US");
 
         OAuth2AuthenticationToken authentication = createMockOAuth2AuthenticationToken(userDetails);
-        AdminUserDTO userDTO = userService.getUserFromAuthentication(authentication).block();
+        AdminUserDTO userDTO = userService.getUserFromAuthentication(authentication);
 
         assertThat(userDTO.getLangKey()).isEqualTo(DEFAULT_LANGKEY);
     }
@@ -116,7 +128,7 @@ class UserServiceIT {
         userDetails.put("locale", "it-IT");
 
         OAuth2AuthenticationToken authentication = createMockOAuth2AuthenticationToken(userDetails);
-        AdminUserDTO userDTO = userService.getUserFromAuthentication(authentication).block();
+        AdminUserDTO userDTO = userService.getUserFromAuthentication(authentication);
 
         assertThat(userDTO.getLangKey()).isEqualTo("it");
     }
@@ -126,7 +138,7 @@ class UserServiceIT {
         userDetails.put("locale", "en_US");
 
         OAuth2AuthenticationToken authentication = createMockOAuth2AuthenticationToken(userDetails);
-        AdminUserDTO userDTO = userService.getUserFromAuthentication(authentication).block();
+        AdminUserDTO userDTO = userService.getUserFromAuthentication(authentication);
 
         assertThat(userDTO.getLangKey()).isEqualTo("en");
     }
@@ -136,7 +148,7 @@ class UserServiceIT {
         userDetails.put("locale", "en-US");
 
         OAuth2AuthenticationToken authentication = createMockOAuth2AuthenticationToken(userDetails);
-        AdminUserDTO userDTO = userService.getUserFromAuthentication(authentication).block();
+        AdminUserDTO userDTO = userService.getUserFromAuthentication(authentication);
 
         assertThat(userDTO.getLangKey()).isEqualTo("en");
     }

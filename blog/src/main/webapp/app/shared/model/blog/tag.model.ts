@@ -1,4 +1,4 @@
-import { IPost } from 'app/shared/model/blog/post.model';
+import { type IPost } from '@/shared/model/blog/post.model';
 
 export interface ITag {
   id?: string;
@@ -6,4 +6,10 @@ export interface ITag {
   posts?: IPost[] | null;
 }
 
-export const defaultValue: Readonly<ITag> = {};
+export class Tag implements ITag {
+  constructor(
+    public id?: string,
+    public name?: string,
+    public posts?: IPost[] | null,
+  ) {}
+}

@@ -15,7 +15,7 @@ describe('Product e2e test', () => {
   const productPageUrlPattern = new RegExp('/store/product(\\?.*)?$');
   const username = Cypress.env('E2E_USERNAME') ?? 'user';
   const password = Cypress.env('E2E_PASSWORD') ?? 'user';
-  const productSample = { title: 'quintuple', price: 25166.69 };
+  const productSample = { title: 'yahoo', price: 25289.87 };
 
   let product;
 
@@ -136,9 +136,7 @@ describe('Product e2e test', () => {
       });
 
       it('last delete button click should delete instance of Product', () => {
-        cy.intercept('GET', '/services/store/api/products/*').as('dialogDeleteRequest');
         cy.get(entityDeleteButtonSelector).last().click();
-        cy.wait('@dialogDeleteRequest');
         cy.getEntityDeleteDialogHeading('product').should('exist');
         cy.get(entityConfirmDeleteButtonSelector).click();
         cy.wait('@deleteEntityRequest').then(({ response }) => {
@@ -162,11 +160,11 @@ describe('Product e2e test', () => {
     });
 
     it('should create an instance of Product', () => {
-      cy.get(`[data-cy="title"]`).type('gaseous');
-      cy.get(`[data-cy="title"]`).should('have.value', 'gaseous');
+      cy.get(`[data-cy="title"]`).type('duh underneath ew');
+      cy.get(`[data-cy="title"]`).should('have.value', 'duh underneath ew');
 
-      cy.get(`[data-cy="price"]`).type('20322.22');
-      cy.get(`[data-cy="price"]`).should('have.value', '20322.22');
+      cy.get(`[data-cy="price"]`).type('18995.9');
+      cy.get(`[data-cy="price"]`).should('have.value', '18995.9');
 
       cy.setFieldImageAsBytesOfEntity('image', 'integration-test.png', 'image/png');
 

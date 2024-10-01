@@ -15,7 +15,7 @@ describe('Blog e2e test', () => {
   const blogPageUrlPattern = new RegExp('/blog/blog(\\?.*)?$');
   const username = Cypress.env('E2E_USERNAME') ?? 'user';
   const password = Cypress.env('E2E_PASSWORD') ?? 'user';
-  const blogSample = { name: 'atop', handle: 'searchingly' };
+  const blogSample = { name: 'ramp encouragement', handle: 'ample apropos dicker' };
 
   let blog;
 
@@ -133,9 +133,7 @@ describe('Blog e2e test', () => {
       });
 
       it('last delete button click should delete instance of Blog', () => {
-        cy.intercept('GET', '/services/blog/api/blogs/*').as('dialogDeleteRequest');
         cy.get(entityDeleteButtonSelector).last().click();
-        cy.wait('@dialogDeleteRequest');
         cy.getEntityDeleteDialogHeading('blog').should('exist');
         cy.get(entityConfirmDeleteButtonSelector).click();
         cy.wait('@deleteEntityRequest').then(({ response }) => {
@@ -159,11 +157,11 @@ describe('Blog e2e test', () => {
     });
 
     it('should create an instance of Blog', () => {
-      cy.get(`[data-cy="name"]`).type('volunteer');
-      cy.get(`[data-cy="name"]`).should('have.value', 'volunteer');
+      cy.get(`[data-cy="name"]`).type('with sign bah');
+      cy.get(`[data-cy="name"]`).should('have.value', 'with sign bah');
 
-      cy.get(`[data-cy="handle"]`).type('apud linseed republican');
-      cy.get(`[data-cy="handle"]`).should('have.value', 'apud linseed republican');
+      cy.get(`[data-cy="handle"]`).type('toward without fantastic');
+      cy.get(`[data-cy="handle"]`).should('have.value', 'toward without fantastic');
 
       cy.get(entityCreateSaveButtonSelector).click();
 

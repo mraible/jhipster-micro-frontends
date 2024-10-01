@@ -38,10 +38,8 @@ export const configurationPageHeadingSelector = '[data-cy="configurationPageHead
 // End Specific Selector Attributes for Cypress
 // ***********************************************
 
-export const classInvalid = 'is-invalid';
-
-export const classValid = 'is-valid';
-
+export const classInvalid = 'invalid';
+export const classValid = 'valid';
 Cypress.Commands.add('authenticatedRequest', data => {
   return cy.getCookie('XSRF-TOKEN').then(csrfCookie => {
     return cy.request({
