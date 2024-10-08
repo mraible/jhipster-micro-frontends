@@ -226,9 +226,27 @@ NOTE: The backend has quick turnaround abilities too, thanks to https://docs.spr
 
 When you're learning concepts like micro frontends, it's often helpful to look at the code that makes things work.
 
-The gateway's `webpack.microfrontend.js` handles specifying the shared dependencies and components between apps. The `src/main/webapp/app/shared/layout/menus/entities.tsx` file contains the menu items for each micro frontend.
+The gateway's `webpack.microfrontend.js` handles specifying the shared dependencies and components between apps.
 
 The blog's `webpack.microfrontend.js` looks similar, except that it exposes its `remoteEntry.js`, menu items, and routes.
+
+The blog and store apps are imported via the following files in the gateway's `src/main/webapp` directory.
+
+|===
+|Framework |Menu items |Routes
+
+|React
+|`app/shared/layout/menus/entities.tsx`
+|`app/routes.tsx`
+
+|Angular
+|`app/layouts/navbar/navbar.component.ts`
+|`app/app.routes.ts`
+
+|Vue
+|`app/core/jhi-navbar/jhi-navbar.component.ts`
+|`app/router/index.ts`
+|===
 
 == Architecture as Code
 
