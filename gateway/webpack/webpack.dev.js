@@ -1,52 +1,104 @@
-'use strict';
+const webpackMerge = require('webpack-merge').merge;
 const BrowserSyncPlugin = require('browser-sync-webpack-plugin');
+const SimpleProgressWebpackPlugin = require('simple-progress-webpack-plugin');
+const WebpackNotifierPlugin = require('webpack-notifier');
+const path = require('path');
+const sass = require('sass');
 
-const { styleLoaders } = require('./vue.utils');
-const config = require('./config');
+const utils = require('./utils.js');
+const commonConfig = require('./webpack.common.js');
 
-module.exports = (env, options) => {
-  const devConfig = {
-    module: {
-      rules: styleLoaders({ sourceMap: config.dev.cssSourceMap, usePostCSS: true }),
-    },
-    // cheap-module-eval-source-map is faster for development
-    devtool: config.dev.devtool,
+const ENV = 'development';
+
+module.exports = async options =>
+  webpackMerge(await commonConfig({ env: ENV }), {
+    devtool: 'cheap-module-source-map', // https://reactjs.org/docs/cross-origin-errors.html
+    mode: ENV,
+    entry: ['./src/main/webapp/app/main'],
     output: {
-      filename: 'app/[name].[contenthash].bundle.js',
-      chunkFilename: 'app/[id].[chunkhash].chunk.js',
+      path: utils.root('build/resources/main/static/'),
+      filename: '[name].[contenthash:8].js',
+      chunkFilename: '[name].[chunkhash:8].chunk.js',
     },
     optimization: {
       moduleIds: 'named',
     },
-    plugins: [],
-  };
-  if (!options.env.WEBPACK_SERVE) return devConfig;
-  devConfig.plugins.push(
-    new BrowserSyncPlugin(
-      {
-        host: 'localhost',
-        port: 9000,
-        proxy: {
-          target: `http://localhost:${options.watch ? '8080' : '9060'}`,
-          ws: true,
+    module: {
+      rules: [
+        {
+          test: /\.(sa|sc|c)ss$/,
+          use: [
+            'style-loader',
+            {
+              loader: 'css-loader',
+              options: { url: false },
+            },
+            {
+              loader: 'postcss-loader',
+            },
+            {
+              loader: 'sass-loader',
+              options: { implementation: sass },
+            },
+          ],
         },
-        socket: {
-          clients: {
-            heartbeatTimeout: 60000,
+      ],
+    },
+    devServer: {
+      hot: false,
+      static: {
+        directory: './build/resources/main/static/',
+      },
+      port: 9060,
+      proxy: [
+        {
+          context: ['/api', '/services', '/management', '/v3/api-docs', '/h2-console', '/auth', '/oauth2', '/login'],
+          target: `http${options.tls ? 's' : ''}://localhost:8080`,
+          secure: false,
+          changeOrigin: options.tls,
+        },
+      ],
+      historyApiFallback: true,
+    },
+    stats: process.env.JHI_DISABLE_WEBPACK_LOGS ? 'none' : options.stats,
+    plugins: [
+      process.env.JHI_DISABLE_WEBPACK_LOGS
+        ? null
+        : new SimpleProgressWebpackPlugin({
+            format: options.stats === 'minimal' ? 'compact' : 'expanded',
+          }),
+      new BrowserSyncPlugin(
+        {
+          https: options.tls,
+          host: 'localhost',
+          port: 9000,
+          proxy: {
+            target: `http${options.tls ? 's' : ''}://localhost:${options.watch ? '8080' : '9060'}`,
+            ws: true,
+            proxyOptions: {
+              changeOrigin: false, //pass the Host header to the backend unchanged  https://github.com/Browsersync/browser-sync/issues/430
+            },
           },
+          socket: {
+            clients: {
+              heartbeatTimeout: 60000,
+            },
+          },
+          /*
+      ,ghostMode: { // uncomment this part to disable BrowserSync ghostMode; https://github.com/jhipster/generator-jhipster/issues/11116
+        clicks: false,
+        location: false,
+        forms: false,
+        scroll: false
+      } */
         },
-        /*
-        ,ghostMode: { // uncomment this part to disable BrowserSync ghostMode; https://github.com/jhipster/generator-jhipster/issues/11116
-          clicks: false,
-          location: false,
-          forms: false,
-          scroll: false
-        } */
-      },
-      {
-        reload: true,
-      },
-    ),
-  );
-  return devConfig;
-};
+        {
+          reload: false,
+        },
+      ),
+      new WebpackNotifierPlugin({
+        title: 'Gateway',
+        contentImage: path.join(__dirname, 'logo-jhipster.png'),
+      }),
+    ].filter(Boolean),
+  });

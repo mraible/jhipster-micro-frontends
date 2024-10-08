@@ -34,8 +34,10 @@ export const swaggerPageSelector = '[id="swagger-ui"]';
 // End Specific Selector Attributes for Cypress
 // ***********************************************
 
-export const classInvalid = 'invalid';
-export const classValid = 'valid';
+export const classInvalid = 'is-invalid';
+
+export const classValid = 'is-valid';
+
 Cypress.Commands.add('authenticatedRequest', data => {
   return cy.getCookie('XSRF-TOKEN').then(csrfCookie => {
     return cy.request({

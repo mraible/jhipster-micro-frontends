@@ -8,26 +8,24 @@ export interface IUser {
   langKey?: string;
   authorities?: any[];
   createdBy?: string;
-  createdDate?: Date;
+  createdDate?: Date | null;
   lastModifiedBy?: string;
-  lastModifiedDate?: Date;
+  lastModifiedDate?: Date | null;
   password?: string;
 }
 
-export class User implements IUser {
-  constructor(
-    public id?: any,
-    public login?: string,
-    public firstName?: string,
-    public lastName?: string,
-    public email?: string,
-    public activated?: boolean,
-    public langKey?: string,
-    public authorities?: any[],
-    public createdBy?: string,
-    public createdDate?: Date,
-    public lastModifiedBy?: string,
-    public lastModifiedDate?: Date,
-    public password?: string,
-  ) {}
-}
+export const defaultValue: Readonly<IUser> = {
+  id: '',
+  login: '',
+  firstName: '',
+  lastName: '',
+  email: '',
+  activated: true,
+  langKey: '',
+  authorities: [],
+  createdBy: '',
+  createdDate: null,
+  lastModifiedBy: '',
+  lastModifiedDate: null,
+  password: '',
+};

@@ -1,4 +1,4 @@
-import { type IUser } from '@/shared/model/user.model';
+import { IUser } from 'app/shared/model/user.model';
 
 export interface IBlog {
   id?: string;
@@ -7,11 +7,4 @@ export interface IBlog {
   user?: IUser | null;
 }
 
-export class Blog implements IBlog {
-  constructor(
-    public id?: string,
-    public name?: string,
-    public handle?: string,
-    public user?: IUser | null,
-  ) {}
-}
+export const defaultValue: Readonly<IBlog> = {};

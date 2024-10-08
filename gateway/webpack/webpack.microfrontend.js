@@ -21,19 +21,24 @@ module.exports = () => {
       chunkIds: 'named',
       runtimeChunk: false,
     },
-    resolve: {
-      fallback: {
-        // Workaround https://github.com/module-federation/universe/issues/1575
-        path: false,
-      },
-    },
 
     plugins: [
       new ModuleFederationPlugin({
         shareScope: 'default',
         shared: {
           ...shareDependencies(),
-          ...shareMappings('@/shared/security/authority', '@/shared/alert/alert.service', '@/locale/translation.service'),
+          ...shareMappings(
+            'app/config/constants',
+            'app/config/store',
+            'app/shared/error/error-boundary-routes',
+            'app/shared/layout/menus/menu-components',
+            'app/shared/layout/menus/menu-item',
+            'app/shared/reducers',
+            'app/shared/reducers/locale',
+            'app/shared/reducers/reducer.utils',
+            'app/shared/util/date-utils',
+            'app/shared/util/entity-utils',
+          ),
         },
       }),
     ],

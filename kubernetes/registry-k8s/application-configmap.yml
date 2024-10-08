@@ -13,5 +13,5 @@ data:
       security:
         authentication:
           jwt:
-            base64-secret: OGNmMTBjZGFkYjJhYjAwYmNjMmYzNjgzMTUwZWUyNjg2ODhkMTIwNzY4MjQwNTg5NTM0NjBhMmFiNjZhZDY2YTk5YzNiOGIwOGE1ZDI1MWE2NjMxMGYwOTNkM2NmMWE2MWY1NA==
+            base64-secret: ODgwNTdmZjM2NzFlMDU4MjE5YTY1ZmQ0ZmNhZDBkNzA1MjhlYjcxODgwMzZlMWVmMzRhYzUxOGI0MmExOWJkNzRiMjhlYmM0ZTExMDg5YzdlM2VkMWM4Y2Y3MTM1OWUxZDAzNQ==
   # app specific configuration
