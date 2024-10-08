@@ -8,11 +8,11 @@
         "createOrEditLabel": "Create or edit a Post",
         "notFound": "No Posts found"
       },
-      "created": "A new Post is created with identifier { param }",
-      "updated": "A Post is updated with identifier { param }",
-      "deleted": "A Post is deleted with identifier { param }",
+      "created": "A new Post is created with identifier {{ param }}",
+      "updated": "A Post is updated with identifier {{ param }}",
+      "deleted": "A Post is deleted with identifier {{ param }}",
       "delete": {
-        "question": "Are you sure you want to delete Post { id }?"
+        "question": "Are you sure you want to delete Post {{ id }}?"
       },
       "detail": {
         "title": "Post"
